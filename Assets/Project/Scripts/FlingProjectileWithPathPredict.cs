@@ -8,6 +8,8 @@ public class FlingProjectileWithPathPredict : MonoBehaviour {
 	public Vector2 lastMousePosition;
 	public Vector2 direction;
 	public float maxForce;
+
+	public Material transparentMaterial;
 	// Use this for initialization
 	void Start () {
 	
@@ -23,9 +25,7 @@ public class FlingProjectileWithPathPredict : MonoBehaviour {
 			GameObject newProjectile = (GameObject)Instantiate(projectilePrefab, gameObject.transform.position, projectilePrefab.transform.rotation);
 			newProjectile.GetComponent<Rigidbody>().AddForce(Vector3.up * upwardForce);
 			newProjectile.GetComponent<Rigidbody>().AddForce(new Vector3(-direction.x, 0, -direction.y) * sideForce);
-			Color projectileColor = newProjectile.GetComponent<Renderer>().material.color;
-			projectileColor.a = .5f;
-			newProjectile.GetComponent<Renderer>().material.color = projectileColor;
+			newProjectile.GetComponent<Renderer>().material = transparentMaterial;
 			Destroy(newProjectile.GetComponent<Collider>());
 		}
 		if (Input.GetKeyUp(KeyCode.Mouse0)) {
