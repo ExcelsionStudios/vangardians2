@@ -80,7 +80,8 @@ public class FlingProjectilePrediction : MonoBehaviour
 		for(int i = 0; i < vertCount; i++)
 		{
 			line.SetPosition(i, curPos);
-			if( curPos.y < 0.0f )
+
+			if( curPos.y < 0.0f ) //TODO - add raycast instead of checking y. This currently wont work with terrain or varied elevation.
 			{
 				impactMarker.transform.position = new Vector3( curPos.x, 0.01f, curPos.z );
 				//Only do three additional loops after this. (This is so that the line renderer always goes into the ground)
