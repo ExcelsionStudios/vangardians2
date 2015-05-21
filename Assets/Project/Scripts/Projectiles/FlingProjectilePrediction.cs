@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(LineRenderer))]
 public class FlingProjectilePrediction : MonoBehaviour 
@@ -32,7 +33,8 @@ public class FlingProjectilePrediction : MonoBehaviour
 
 	void Update()
 	{
-		DoThrowLogic();
+		if (!EventSystem.current.IsPointerOverGameObject())
+			DoThrowLogic();
 	}
 
 	void DoThrowLogic()
