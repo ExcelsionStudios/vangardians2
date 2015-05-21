@@ -1,22 +1,31 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SpawnEnemy : MonoBehaviour {
-	public float spawnRate;
-	public Transform tower;
-	public GameObject prefab;
+// Esai - 5/19/2015. Commenting by Matt.
+public class SpawnEnemy : MonoBehaviour 
+{
+	public float spawnRate;				// The rate at which this spawner will spawn a new Enemy.
+	public Transform tower;				// Reference to the player tower's location.
+	public GameObject enemyPrefab;		// Reference to the Enemy prefab.
 
 	float initRate;
+
 	// Use this for initialization
-	void Start () {
+	void Start() 
+	{
 		initRate = spawnRate;
 	}
 	
-	// Update is called once per frame
-	void Update () {
+	// Update will handle when to spawn a new enemy based on using a set interval rate.
+	void Update() 
+	{
 		spawnRate -= Time.deltaTime;
-		if (spawnRate <= 0) {
-			GameObject newEnemy = (GameObject)Instantiate(prefab, gameObject.transform.position, prefab.transform.rotation);
+
+		// Time to spawn new Enemy!
+		if (spawnRate <= 0) 
+		{
+			// Instantiate the enemy prefab, get its MoveTo script, and set the target to the Player's Tower.
+			GameObject newEnemy = (GameObject)Instantiate(enemyPrefab, gameObject.transform.position, enemyPrefab.transform.rotation);
 			newEnemy.GetComponent<MoveTo>().target = tower;
 			spawnRate = initRate;
 		}

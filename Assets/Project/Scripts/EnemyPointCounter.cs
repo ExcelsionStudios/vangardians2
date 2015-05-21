@@ -6,13 +6,13 @@ using UnityEngine;
 // Script which we will temporarily attach to the SlingProjectile to keep track of "Score."
 public class EnemyPointCounter : MonoBehaviour 
 {
-	private static uint score;
+	private static int score;
 	
-	// We want access to this value, but we don't want to allow other classes to change its value.
-	public static uint Score
+	// Get and set the Score value. Public set because we now want Enemies to reduce the Player's score.
+	public static int Score
 	{
 		get { return score; }
-		private set { score = value; }
+	    set { score = Mathf.Clamp(value, 0, int.MaxValue); }
 	}
 
 	void OnCollisionEnter(Collision col)
