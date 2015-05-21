@@ -16,6 +16,7 @@ public class FlingProjectilePrediction : MonoBehaviour
 	public int vertCount = 128;
 
 	private Vector2 mouseStartDragPos; //Our mouse pos when we started a throw.
+
 	void Start () 
 	{
 		line = GetComponent<LineRenderer>();

@@ -15,7 +15,7 @@ public class ProjectileButton : MonoBehaviour
 	public Button projectileButton;
 	public Text projectileButtonText;
 
-	public GameObject[] projectilePrefabs = new GameObject[3];
+	public GameObject[] projectilePrefabs;
 
 	// Use this for initialization
 	void Start () 
