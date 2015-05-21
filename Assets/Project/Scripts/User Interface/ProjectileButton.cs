@@ -10,7 +10,7 @@ using UnityEngine.UI;
 // TODO: Well if we even keep this feature (just prototype) make it so clicking button doesn't fire a projectile.
 public class ProjectileButton : MonoBehaviour 
 {
-	string[] projectileNames = { "Standard", "Bouncy", "Rolling", "Explosive", "Land Mine", "Barrier", "Scatter Shot" };
+	string[] projectileNames = { "Standard", "Bouncy", "Rolling", "Explosive", "Land Mine", "Barrier"};
 	private int stringIndex;
 	public Button projectileButton;
 	public Text projectileButtonText;
