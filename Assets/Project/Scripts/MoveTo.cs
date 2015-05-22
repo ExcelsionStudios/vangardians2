@@ -22,7 +22,8 @@ public class MoveTo : MonoBehaviour
 		if (target != null) 
 		{
 			float step = speed * Time.deltaTime;
-			gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, target.position, step);//speed);
+			gameObject.transform.LookAt(target);
+			gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, target.position, step);
 		}
 	}
 }
