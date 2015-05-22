@@ -42,7 +42,7 @@ public class PlayerTower : MonoBehaviour
 			Debug.Log ("Enemy Entered Tower!");
 			Enemy enemy = other.gameObject.GetComponent<Enemy>();
 			EnemyPointCounter.Score -= enemy.KillPoints / 4;
-			Destroy(other.gameObject);
+		//	Destroy(other.gameObject);
 		}
 	}
 }
