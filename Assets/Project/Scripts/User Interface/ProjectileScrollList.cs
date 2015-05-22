@@ -11,7 +11,7 @@ public class ProjectileScrollList : MonoBehaviour
 {
 	// The value at which we set the Time.timescale property. We want between 0f and 1f (we don't want to speed up time when player is making a decision).
 	// TODO: Clamp value, not really necessary for now.
-	public float timeScaleFactor;
+	public float timeScaleFactor = 0.25f;
 
 	// Use this for initialization
 	void Start () 
@@ -24,6 +24,7 @@ public class ProjectileScrollList : MonoBehaviour
 	{
 		// Set time scale back to what, for now, the game will usually always be running-at. This will change later.
 		Time.timeScale = 1.0f;
+		Time.fixedDeltaTime = 0.02f;
 
 		PerformRaycast();
 		Debug.Log ("Time Scale: " + Time.timeScale.ToString ());
@@ -46,7 +47,8 @@ public class ProjectileScrollList : MonoBehaviour
 			{    
 				Debug.Log ("Scroll Wheel being hit");
 				// This section runs only if this object is the front object where the cursor is
-				Time.timeScale = 0.1f;
+				Time.timeScale = timeScaleFactor;
+				Time.fixedDeltaTime = timeScaleFactor * 0.02f;
 			}
 		}
 //		if(objectsHit[x].gameObject == this.gameObject)                                         
