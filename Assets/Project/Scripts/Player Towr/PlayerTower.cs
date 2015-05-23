@@ -33,7 +33,7 @@ public class PlayerTower : MonoBehaviour
 	public Text manaText;
 
 	// More quick and dirtiness to show a game over type screen. But the game will still run after game over is reached.
-	public GameObject gameOverUIReference;
+	public CanvasGroup gameOverUIReference;
 
 	// Rate at which Mana recharges. This will be amount of mana per second.
 	public float ManaRechargeRate = 2f;
@@ -63,7 +63,9 @@ public class PlayerTower : MonoBehaviour
 
 		if (health <= 0f)
 		{
-			gameOverUIReference.SetActive(true);
+			gameOverUIReference.alpha = 1;
+			gameOverUIReference.interactable = true;
+			gameOverUIReference.blocksRaycasts = true;
 		}
 	}
 

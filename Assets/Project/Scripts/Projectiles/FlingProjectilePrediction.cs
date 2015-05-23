@@ -48,6 +48,14 @@ public class FlingProjectilePrediction : MonoBehaviour
 		{
 			DoThrowLogic();
 		}
+
+		//Esai Solorio Changes
+		//This sets the color of the line. If u have mana it will set to red, otherwise it will be gray
+
+		if (projectilePrefab.GetComponent<Projectile>().ManaCost <= playerTower.Mana)
+			line.material.color = Color.red;
+		else
+			line.material.color = Color.gray;
 	}
 
 	void DoThrowLogic()
@@ -81,7 +89,10 @@ public class FlingProjectilePrediction : MonoBehaviour
 				line.SetVertexCount(0);
 				impactMarker.SetActive(false);
 				mouseStartDragPos = Vector2.zero;
+
+			
 			}
+
 		}
 	}
 

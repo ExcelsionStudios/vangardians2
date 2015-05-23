@@ -15,7 +15,8 @@ public class MoveTo : MonoBehaviour
 	{
 	
 	}
-	
+
+
 	// Update is called once per frame
 	void Update () 
 	{
@@ -25,5 +26,16 @@ public class MoveTo : MonoBehaviour
 			gameObject.transform.LookAt(target);
 			gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, target.position, step);
 		}
+	}
+
+	// Esai Solorio Changes
+	void LateUpdate(){
+		Vector3 oldRotation = gameObject.transform.rotation.eulerAngles;  //save old rotation
+
+		gameObject.transform.LookAt (target); //look at the target again
+		Quaternion newRotation = new Quaternion ();
+		newRotation.eulerAngles = new Vector3 (oldRotation.x, gameObject.transform.rotation.eulerAngles.y, oldRotation.z); //retain previous rotations except the Y axis
+		gameObject.transform.rotation = newRotation;
+
 	}
 }
