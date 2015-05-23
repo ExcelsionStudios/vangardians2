@@ -32,11 +32,17 @@ public class PlayerTower : MonoBehaviour
 	public Text healthText;
 	public Text manaText;
 
+	// Trying to reduce the number of small scripts, so let's get rid of the kill count script and add it as part of the Tower.
+	public Text killAmountText;
+
 	// More quick and dirtiness to show a game over type screen. But the game will still run after game over is reached.
 	public CanvasGroup gameOverUIReference;
 
 	// Rate at which Mana recharges. This will be amount of mana per second.
 	public float ManaRechargeRate = 2f;
+
+
+	public static int NumberOfKills;
 
 	void OnAwake()
 	{
@@ -57,6 +63,8 @@ public class PlayerTower : MonoBehaviour
 		// Update the health text's text value to show current health.
 		healthText.text = "HP: " + (int)Health + " / " + (int)MaxHealth;
 		manaText.text = "Mana: " + (int)Mana + " / " + (int)MaxMana;
+
+		killAmountText.text = "Kills: " + NumberOfKills;
 
 		// Recharge the player's Mana pool.
 		Mana += ManaRechargeRate * Time.deltaTime;

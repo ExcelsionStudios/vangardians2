@@ -12,14 +12,14 @@ public class DamageEnemyOnImpact : MonoBehaviour
 		if(col.gameObject.tag == "Enemy")
 		{
 			Enemy enemy = col.gameObject.GetComponent<Enemy>();
-			Debug.Log("Enemy with " + enemy.Health + " hit for " + this.gameObject.GetComponent<Projectile>().Damage.ToString () + " Damage!");
+			Debug.Log("Enemy with " + enemy.Health + "Health hit for " + this.gameObject.GetComponent<Projectile>().Damage.ToString () + " Damage!");
 			enemy.Health -= this.gameObject.GetComponent<Projectile>().Damage;
 
 			if (enemy.Health <= 0f)
 			{
-				Debug.Log ("Enemy Dead!");
+				PlayerTower.NumberOfKills++;
 				Destroy (col.transform.parent.gameObject);
-				//Destroy (col.gameObject);
+				//Destroy (col.gameObject);			// If the Enemy is only a single gameObject like before.
 			}
 		}
 	}
