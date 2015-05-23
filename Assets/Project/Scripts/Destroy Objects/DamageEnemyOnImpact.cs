@@ -17,7 +17,9 @@ public class DamageEnemyOnImpact : MonoBehaviour
 
 			if (enemy.Health <= 0f)
 			{
-				Destroy (col.gameObject);
+				Debug.Log ("Enemy Dead!");
+				Destroy (col.transform.parent.gameObject);
+				//Destroy (col.gameObject);
 			}
 		}
 	}

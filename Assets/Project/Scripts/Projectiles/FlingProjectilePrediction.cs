@@ -51,7 +51,6 @@ public class FlingProjectilePrediction : MonoBehaviour
 
 		//Esai Solorio Changes
 		//This sets the color of the line. If u have mana it will set to red, otherwise it will be gray
-
 		if (projectilePrefab.GetComponent<Projectile>().ManaCost <= playerTower.Mana)
 			line.material.color = Color.red;
 		else

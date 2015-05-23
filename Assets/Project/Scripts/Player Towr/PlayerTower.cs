@@ -63,6 +63,7 @@ public class PlayerTower : MonoBehaviour
 
 		if (health <= 0f)
 		{
+			// Set the GameOverUIReference to  work appropriately.
 			gameOverUIReference.alpha = 1;
 			gameOverUIReference.interactable = true;
 			gameOverUIReference.blocksRaycasts = true;

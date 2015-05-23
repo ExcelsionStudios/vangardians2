@@ -16,9 +16,15 @@ public class DealDamage : MonoBehaviour
 	void Start()
 	{
 	//	gameObject.GetComponent<Animation> () ["Attack"].speed = rate;
+		Animator animator = gameObject.GetComponent<Animator>();
+		if (animator == null)
+			Debug.Log ("Null Animator");
+		else
+			animator.speed = rate;
 
 		// Cache the reference to the PlayerTower component. We don't want GetComponent being called often: It's expensive!
-		playerTowerReference = transform.parent.GetComponent<MoveTo>().target.GetComponent<PlayerTower>(); //moveToReference.target.GetComponent<PlayerTower>();
+		playerTowerReference = transform.parent.GetComponent<MoveTo>().target.GetComponent<PlayerTower>();
+		//playerTowerReference = this.gameObject.GetComponent<MoveTo>().target.GetComponent<PlayerTower>();		// If Enemies end up not being parented
 	}
 
 	// Take health away from the player's Tower based on the power specified.

@@ -25,7 +25,11 @@ public class ProjectileScrollList : MonoBehaviour
 		Time.timeScale = 1.0f;
 		Time.fixedDeltaTime = 0.02f;
 
-		PerformRaycast();
+		// If the player's currently "loaded" projectile is pulled back into the projectile scroll list, it freezes time. We don't want that but the below way was giving other issues with aiming.
+		//if (!Input.GetButton("Fire1"))
+		{
+			PerformRaycast();
+		}
 	}
 
 	// This function performs a raycast to detect if this object is in front of other objects if any overlap at the cursor's position when the mouse button is initially pressed
