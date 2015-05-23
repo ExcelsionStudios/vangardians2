@@ -32,6 +32,8 @@ public class PlayerTower : MonoBehaviour
 	public Text healthText;
 	public Text manaText;
 
+	// More quick and dirtiness to show a game over type screen. But the game will still run after game over is reached.
+	public GameObject gameOverUIReference;
 
 	// Rate at which Mana recharges. This will be amount of mana per second.
 	public float ManaRechargeRate = 2f;
@@ -58,6 +60,11 @@ public class PlayerTower : MonoBehaviour
 
 		// Recharge the player's Mana pool.
 		Mana += ManaRechargeRate * Time.deltaTime;
+
+		if (health <= 0f)
+		{
+			gameOverUIReference.SetActive(true);
+		}
 	}
 
 	// ** ALTER THIS! ** We don't want enemies just disappearing anymore. We want them to linger and attack the Player Tower.
