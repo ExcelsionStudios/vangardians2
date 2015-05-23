@@ -1,3 +1,8 @@
 I, or anyone, will try to grab all working features found within everyone's scene and combine them into one scene to show off for demos.
 
-This will prevent th e issue of the last project, where we had a few cool things going, just not all in one scene.
+This will prevent the issue of the last project, where we had a few cool things going, just not all in one scene.
+
+We will have a "Working" scene which we leave alone if it's in a fully-functional, working state. This will be what we show in meetings.
+We will have an "Experimenting" scene, where we have a near-up-to-date version (or a copy of "Working") of all working features but can experiment by tweaking it a little.
+
+Try not to edit "Working" scene until we agree on what to add or who's scene to copy and paste and label as the "Working" scene (which seems to be the method we've been working with thus far).

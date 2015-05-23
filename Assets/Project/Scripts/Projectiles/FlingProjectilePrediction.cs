@@ -1,64 +1,87 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
+// Stephen - Around 5/17/2015. Some commenting and additions by Matt McGrath.
+
+// Primary class for both predicting where a launched projectile will land and launching the projectile itself.
+// Matt's TODO Possible Suggestion (If Possible): Make this work with all masses of projectile, if designer calls for heavier or lighter projectiles that might require different pull-back lengths for aiming.
 [RequireComponent(typeof(LineRenderer))]
 public class FlingProjectilePrediction : MonoBehaviour 
 {
-	public GameObject projectilePrefab;
-	public GameObject impactMarker;
-	public float projectileMass = 1f; //Used during prediction. Wrong values means wrong prediction!
+	public GameObject projectilePrefab;			// Reference to projectile we will use. We change this in the ChangeProjectile script via a scroll list of projectile choices.
+	public GameObject impactMarker;				// Reference to our "landing zone," basically. It will be displayed on the terrain where the projectile will land.
+	public float projectileMass = 1f; 			// Used during prediction. Wrong values means wrong prediction!
 	public float throwForce = 360f;
-	public float mouseDragSensitivity = 380f; //Lower values are more sensitive.
+	public float mouseDragSensitivity = 380f; 	// Lower values are more sensitive.
 	public float extraHeight = 280f;
 
 	private LineRenderer line;
 	public int vertCount = 128;
 
-	private Vector2 mouseStartDragPos; //Our mouse pos when we started a throw.
+	private Vector2 mouseStartDragPos; 			// Our mouse pos when we started a throw.
 
-	void Start () 
+	// For now, let's reference our PlayerTower (lazily thru inspector without safety checks =D). In future, a better design choice might be that the PlayerTower references THIS script, 
+	// as the tower is technically the object that possess this ability.
+	public PlayerTower playerTower;	
+
+	// On start, cache the LineRenderer component, set its vertex count, and set the impact maker to inactive.
+	void Start() 
 	{
 		line = GetComponent<LineRenderer>();
-		if( line == null )
+		if (line == null)
 			Debug.LogError("No LineRenderer component is attached!", this);
 		else
-			line.SetVertexCount( 0 );
+			line.SetVertexCount(0);
 
-		if( impactMarker == null )
+		if ( impactMarker == null)
 			Debug.LogError("No ImpactMarker gameobject is specified!", this);
 		else
-			impactMarker.SetActive( false );
+			impactMarker.SetActive(false);
 	}
 
-
+	// If weren't not clicking over a UI element, do the required throw logic.
 	void Update()
 	{
+		// Use this line to prevent predicting or launching when we hit a Button or UI object via a mouse click.
 		if (!EventSystem.current.IsPointerOverGameObject())
+		{
 			DoThrowLogic();
+		}
 	}
 
 	void DoThrowLogic()
 	{
-		if( Input.GetButtonDown("Fire1") ) //Player has started a throw.
+		if (Input.GetButtonDown("Fire1")) 		// Player has started a throw.
 		{
-			impactMarker.SetActive( true );
+			impactMarker.SetActive(true);
 			mouseStartDragPos = Input.mousePosition;
 		}
 
-		if( Input.GetButton("Fire1") ) //Player is aiming. Draw a predicted path.
+		if (Input.GetButton("Fire1")) 			// Player is aiming. Draw a predicted path.
 		{
 			Vector3 predictedForce = GetThrowForce();
 			DrawPrediction(transform.position, predictedForce / (50.0f * projectileMass)); //50 seems to be the best value for accurate prediction. Modify with care!
+			// From Matt: What is this 50.0f magic number? =o lol. Explains why we're stuck with singular-massed objects perhaps?
 		}
-		else if( Input.GetButtonUp("Fire1") ) //Player has let go. Create a projectile and fire it.
+		else if (Input.GetButtonUp("Fire1")) 	// Player has let go. Create a projectile and fire it.
 		{
-			GameObject newProjectile = (GameObject)Instantiate(projectilePrefab, gameObject.transform.position, projectilePrefab.transform.rotation);
-			newProjectile.GetComponent<Rigidbody>().AddForce( GetThrowForce() );
+			Debug.Log("Our Mana: " + playerTower.Mana + ", Projectile's Cost: " + projectilePrefab.GetComponent<Projectile>().ManaCost);
+			// Matt - 5/22/2015: With Mana System, we want new checks for if we should create the projectile. Do we have the Mana required to launch this projectile?
+			float manaCost = projectilePrefab.GetComponent<Projectile>().ManaCost;
+			if (manaCost <= playerTower.Mana)
+			{
+				// Drain the player's Mana by the appropriate amount.
+				playerTower.Mana -= manaCost;
 
-			line.SetVertexCount( 0 );
-			impactMarker.SetActive( false );
-			mouseStartDragPos = Vector2.zero;
+				// Create the appropriate projectile by Instantiating its prefab.
+				GameObject newProjectile = (GameObject)Instantiate(projectilePrefab, gameObject.transform.position, projectilePrefab.transform.rotation);
+				newProjectile.GetComponent<Rigidbody>().AddForce( GetThrowForce() );
+				
+				line.SetVertexCount(0);
+				impactMarker.SetActive(false);
+				mouseStartDragPos = Vector2.zero;
+			}
 		}
 	}
 
@@ -67,13 +90,13 @@ public class FlingProjectilePrediction : MonoBehaviour
 		return VectorExtras.Direction((Vector2)Input.mousePosition, (Vector2)mouseStartDragPos) * //This first bit gets the base direction. We must cast as Vector2 due to conflicts with Vector3.
 			 ( VectorExtras.ReverseLerp(Vector2.Distance(Input.mousePosition, mouseStartDragPos), 0.0f, mouseDragSensitivity) * throwForce );
 	}
+
 	Vector3 GetThrowForce()
 	{
 		Vector2 throwDir = GetThrowDirection();
 		return new Vector3(throwDir.x, extraHeight, throwDir.y);
 	}
-
-
+	
 	void DrawPrediction( Vector3 startPos, Vector3 startVelocity )
 	{
 		line.SetVertexCount( vertCount );
@@ -102,54 +125,4 @@ public class FlingProjectilePrediction : MonoBehaviour
 			curPos += curVel * Time.fixedDeltaTime;
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*
-	public float upwardForce;
-	public float sideForce;
-	public Vector2 lastMousePosition;
-	public Vector2 direction;
-	public float maxForce;
-	Vector3 GetForce()
-	{
-		direction = new Vector2 (Mathf.Clamp(Input.mousePosition.x - lastMousePosition.x, -maxForce, maxForce) / maxForce,
-		                         Mathf.Clamp(Input.mousePosition.y - lastMousePosition.y, -maxForce, maxForce) / maxForce );
-		return new Vector3(-direction.x * sideForce, upwardForce, -direction.y * sideForce) ;
-	}
-	
-	void Update () 
-	{
-		if( Input.GetButton("Fire1") ) 
-		{
-			//lastMousePosition = Input.mousePosition;
-			DrawPrediction( transform.position, GetForce() );
-		}
-		else
-		{
-			line.SetVertexCount( 0 );
-		}
-
-		if( Input.GetButtonUp("Fire1") ) 
-		{
-			direction = new Vector2 (Mathf.Clamp(Input.mousePosition.x - lastMousePosition.x, -maxForce, maxForce) / maxForce,
-			                         Mathf.Clamp(Input.mousePosition.y - lastMousePosition.y, -maxForce, maxForce) / maxForce );
-			GameObject newProjectile = (GameObject)Instantiate(projectilePrefab, gameObject.transform.position, projectilePrefab.transform.rotation);
-			newProjectile.GetComponent<Rigidbody>().AddForce(Vector3.up * upwardForce);
-			newProjectile.GetComponent<Rigidbody>().AddForce(new Vector3(-direction.x, 0, -direction.y) * sideForce);
-		}
-		lastMousePosition = Input.mousePosition;
-	}
-	*/
-
 }

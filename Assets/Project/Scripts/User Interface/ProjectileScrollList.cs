@@ -16,7 +16,6 @@ public class ProjectileScrollList : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-	
 	}
 	
 	// Update is called once per frame
@@ -27,7 +26,6 @@ public class ProjectileScrollList : MonoBehaviour
 		Time.fixedDeltaTime = 0.02f;
 
 		PerformRaycast();
-		Debug.Log ("Time Scale: " + Time.timeScale.ToString ());
 	}
 
 	// This function performs a raycast to detect if this object is in front of other objects if any overlap at the cursor's position when the mouse button is initially pressed
@@ -37,29 +35,17 @@ public class ProjectileScrollList : MonoBehaviour
 		cursor.position = Input.mousePosition;
 		List<RaycastResult> objectsHit = new List<RaycastResult> ();
 		EventSystem.current.RaycastAll(cursor, objectsHit);
-		int count = objectsHit.Count;
-		int x = 0;
-		
 
 		foreach (RaycastResult result in objectsHit)
 		{
 			if (result.gameObject == this.gameObject)                                         
 			{    
-				Debug.Log ("Scroll Wheel being hit");
-				// This section runs only if this object is the front object where the cursor is
+				// Our mouse is over the projectile list.  Set the timeScale to our desired value.
 				Time.timeScale = timeScaleFactor;
+
+				// And set fixedDelta time to the same value x 0.002 (the project's default). This prevents the laggy-looking physics.
 				Time.fixedDeltaTime = timeScaleFactor * 0.02f;
 			}
 		}
-//		if(objectsHit[x].gameObject == this.gameObject)                                         
-//		{    
-//			Debug.Log ("Scroll Wheel being hit");
-//			// This section runs only if this object is the front object where the cursor is
-//			Time.timeScale = 0.1f;
-//		}
-//		else
-//		{
-//			Time.timeScale = 1.0f;
-//		}
 	}
 }
