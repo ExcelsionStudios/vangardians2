@@ -13,17 +13,28 @@ public class EnemyWaveManager : MonoBehaviour
 	// The number of the current wave.
 	public int CurrentWaveNumber;
 
+
+	// BEING LAZYYYYY: For Prototype, let's Prefab "Waves" and drag them in here.  Can be a list or array later.
+	public List<GameObject> prefabedWaves;
+	private EnemyWave currentPrefabedWave;
+
+
+	private float gracePeriodBetweenWaves = 5.0f;
+	private float gracePeriodTimer;
+
 	// Use this for initialization
 	void Start () 
 	{
 		// We start on Wave 1.
 		CurrentWaveNumber = 1;
+
+		SetUpPrefabedWave(CurrentWaveNumber);
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
-		if (waves[CurrentWaveNumber - 1].IsWaveComplete)
+		//if (waves[CurrentWaveNumber - 1].IsWaveComplete)
 		{
 			// Some pausing? Some menu? 
 
@@ -32,8 +43,29 @@ public class EnemyWaveManager : MonoBehaviour
 			// Cleanup the previous wave, in case of memory leaks.
 
 			//Then go onto the next wave.
-
 		}
+		if (currentPrefabedWave.IsWaveComplete)
+		{
+			Debug.Log ("Wave Complete!" );
+			gracePeriodTimer -= Time.deltaTime;
+			if (gracePeriodTimer <= 0f)
+			{
+				SetUpPrefabedWave(++CurrentWaveNumber);
+			}
+		}
+	}
+
+
+	void SetUpPrefabedWave(int waveNumber)
+	{
+		if (waveNumber >= prefabedWaves.Count);
+		    return;
+
+		GameObject go = prefabedWaves[waveNumber - 1];
+		currentPrefabedWave = go.GetComponent<EnemyWave>();
+		currentPrefabedWave.gameObject.SetActive(true);
+	
+		gracePeriodTimer = gracePeriodBetweenWaves;
 	}
 
 	// Sets up the Enemy Wave number specified in the parameter. For now let's use a switch-case to keep things simple.
@@ -45,19 +77,22 @@ public class EnemyWaveManager : MonoBehaviour
 		{
 		case 1:
 			wave.TotalNumberOfEnemies = 5;
+			wave.WaveTime = 30f;
 			break;
 		case 2:
 			wave.TotalNumberOfEnemies = 10;
+			wave.WaveTime = 60f;
 			break;
 		case 3:
 			wave.TotalNumberOfEnemies = 15;
-			break;
-		case 4:
-			wave.TotalNumberOfEnemies = 20;
+			wave.WaveTime = 90f;
 			break;
 		default:
 			wave.TotalNumberOfEnemies = 10;
+			wave.WaveTime = 60f;
 			break;
 		}
+
+		waves.Add(wave);
 	}
 }
