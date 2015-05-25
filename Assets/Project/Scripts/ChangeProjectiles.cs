@@ -9,6 +9,7 @@ public class ChangeProjectiles : MonoBehaviour {
 	public UnityEngine.UI.Image currentPrefab;
 	public void changePrefab(GameObject obj){
 		playerTower.projectilePrefab = obj;
+		gameObject.GetComponentInChildren<ProjectileScrollList> ().enabled = false;
 		selectorUI.SetBool ("transition_out", true);
 		selectorUI.SetBool ("transition_in", false);
 
