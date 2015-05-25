@@ -15,4 +15,8 @@ public class ChangeProjectiles : MonoBehaviour {
 
 
 	}
+
+	public void changeCurrentPrefab(GameObject obj){
+		currentPrefab.GetComponent<UnityEngine.UI.Image> ().color = obj.GetComponent<UnityEngine.UI.Image> ().color;
+	}
 }
