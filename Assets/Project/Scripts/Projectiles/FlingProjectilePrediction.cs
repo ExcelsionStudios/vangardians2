@@ -73,7 +73,7 @@ public class FlingProjectilePrediction : MonoBehaviour
 		}
 		else if (Input.GetButtonUp("Fire1")) 	// Player has let go. Create a projectile and fire it.
 		{
-			Debug.Log("Our Mana: " + playerTower.Mana + ", Projectile's Cost: " + projectilePrefab.GetComponent<Projectile>().ManaCost);
+			//Debug.Log("Our Mana: " + playerTower.Mana + ", Projectile's Cost: " + projectilePrefab.GetComponent<Projectile>().ManaCost);
 
 			// Matt - 5/22/2015: With Mana System, we want new checks for if we should create the projectile. Do we have the Mana required to launch this projectile?
 			Projectile projectile = projectilePrefab.GetComponent<Projectile>();
@@ -116,7 +116,7 @@ public class FlingProjectilePrediction : MonoBehaviour
 	Vector3 GetThrowForce()
 	{
 		Vector2 throwDir = GetThrowDirection();
-		Debug.Log("Extra Height: " + extraHeight + ", Throw Force: " + throwForce);
+		//Debug.Log("Extra Height: " + extraHeight + ", Throw Force: " + throwForce);
 		return new Vector3(throwDir.x, extraHeight, throwDir.y);
 	}
 	

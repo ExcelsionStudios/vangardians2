@@ -15,7 +15,7 @@ public class EnemyWave : MonoBehaviour
 	public int NumberOfEnemiesSpawned;		// Number of enemies that have already spawned.
 	public bool IsWaveComplete;				// TODO: Make this based on...something.
 	public float WaveTime;					// How long (in seconds) will wave last? (TODO: Or will the wave last / end based on other conditions? Design info needed)
-	private float waveTimeRemaining;		// How long (in seconds) until the wave is ending (stopping enemies from being spawned).
+	public float waveTimeRemaining;		// How long (in seconds) until the wave is ending (stopping enemies from being spawned).
 	public GameObject[] SpawnPoints;		// An array storing all possible points enemies can spawn from.
 	public float SpawnRate;					// The rate (in seconds) at which a new enemy will spawn. (TODO: Perhaps each spawn point hsa this attribute, maybe make Spawners its own small class).
 	private float spawnRateTimer;			// Timer helper that counts down from SpawnRate.
@@ -36,6 +36,7 @@ public class EnemyWave : MonoBehaviour
 		}
 
 		IsWaveInProgress = true;
+		IsWaveComplete = false;
 
 		waveTimeRemaining = WaveTime;
 	}
@@ -49,8 +50,6 @@ public class EnemyWave : MonoBehaviour
 		//spawnRateTimer += 1.0f * Time.deltaTime;
 		waveTimeRemaining -= 1.0f * Time.deltaTime;
 
-		Debug.Log ("Wave Time Remaining: " + waveTimeRemaining);
-		
 //		if (spawnRateTimer >= SpawnRate)
 //		{
 //			spawnRateTimer = 0.0f;
@@ -70,16 +69,18 @@ public class EnemyWave : MonoBehaviour
 
 	}
 
-	void EndWave()
+	public void EndWave()
 	{
+		Debug.Log("Ending Current Wave");
 		IsWaveInProgress = false;
 		IsWaveComplete = true;
-		this.gameObject.SetActive(false);
-		Destroy(this.gameObject, 0.5f);
+//		this.gameObject.SetActive(false);
+//		Destroy(this.gameObject, 0.5f);
 	}
 
-	void BeginWave()
+	public void BeginWave()
 	{
+		Debug.Log("Starting New Wave");
 		IsWaveInProgress = true;
 		IsWaveComplete = false;
 	}

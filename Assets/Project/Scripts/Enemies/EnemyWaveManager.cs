@@ -16,7 +16,7 @@ public class EnemyWaveManager : MonoBehaviour
 
 	// BEING LAZYYYYY: For Prototype, let's Prefab "Waves" and drag them in here.  Can be a list or array later.
 	public List<GameObject> prefabedWaves;
-	private EnemyWave currentPrefabedWave;
+	public EnemyWave currentPrefabedWave;
 
 
 	private float gracePeriodBetweenWaves = 5.0f;
@@ -44,28 +44,35 @@ public class EnemyWaveManager : MonoBehaviour
 
 			//Then go onto the next wave.
 		}
-		if (currentPrefabedWave.IsWaveComplete)
+
+		if (currentPrefabedWave != null && currentPrefabedWave.IsWaveComplete)
 		{
-			Debug.Log ("Wave Complete!" );
+			Debug.Log ("Wave Complete! New One Starts In " + gracePeriodTimer);
 			gracePeriodTimer -= Time.deltaTime;
 			if (gracePeriodTimer <= 0f)
 			{
+				currentPrefabedWave.gameObject.SetActive(false);
+				Destroy(currentPrefabedWave);
+
 				SetUpPrefabedWave(++CurrentWaveNumber);
 			}
 		}
 	}
 
-
 	void SetUpPrefabedWave(int waveNumber)
 	{
-		if (waveNumber >= prefabedWaves.Count);
-		    return;
+//
+//		if (waveNumber >= prefabedWaves.Count);
+//		    return;
 
+		Debug.Log("Setting Up Next Wave");
 		GameObject go = prefabedWaves[waveNumber - 1];
 		currentPrefabedWave = go.GetComponent<EnemyWave>();
 		currentPrefabedWave.gameObject.SetActive(true);
 	
 		gracePeriodTimer = gracePeriodBetweenWaves;
+
+		currentPrefabedWave.BeginWave();
 	}
 
 	// Sets up the Enemy Wave number specified in the parameter. For now let's use a switch-case to keep things simple.

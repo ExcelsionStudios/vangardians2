@@ -12,7 +12,7 @@ public class DamageEnemyOnImpact : MonoBehaviour
 		if(col.gameObject.tag == "Enemy")
 		{
 			Enemy enemy = col.gameObject.GetComponent<Enemy>();
-			Debug.Log("Enemy with " + enemy.Health + "Health hit for " + this.gameObject.GetComponent<Projectile>().Damage.ToString () + " Damage!");
+			//Debug.Log("Enemy with " + enemy.Health + "Health hit for " + this.gameObject.GetComponent<Projectile>().Damage.ToString () + " Damage!");
 			enemy.Health -= this.gameObject.GetComponent<Projectile>().Damage;
 
 			if (enemy.Health <= 0f)

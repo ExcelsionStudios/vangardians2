@@ -50,11 +50,8 @@ public class PlayerTower : MonoBehaviour
 	// Use this for initialization: Simply sets Health and Mana to their max values for now.
 	void Start()
 	{
-		Debug.Log ("Health: " + Health + ", health: " + health);
-		Debug.Log ("Mana: " + Mana + ", health: " + mana);
 		Health =  MaxHealth;
 		Mana = MaxMana;
-		Debug.Log ("Mana: " + Mana + ", health: " + mana);
 	}
 	
 	// Update is called once per frame
