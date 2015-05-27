@@ -43,7 +43,7 @@ public class FlingProjectilePrediction : MonoBehaviour
 	// If weren't not clicking over a UI element, do the required throw logic.
 	void Update()
 	{
-		// Use this line to prevent predicting or launching when we hit a Button or UI object via a mouse click.
+		// Use this line to prevent predicting or launching when we hit a Button or UI object via a mouse click. TODO: Seems to no longer apply with new radial menu.
 		if (!EventSystem.current.IsPointerOverGameObject())
 		{
 			DoThrowLogic();
@@ -74,8 +74,10 @@ public class FlingProjectilePrediction : MonoBehaviour
 		else if (Input.GetButtonUp("Fire1")) 	// Player has let go. Create a projectile and fire it.
 		{
 			Debug.Log("Our Mana: " + playerTower.Mana + ", Projectile's Cost: " + projectilePrefab.GetComponent<Projectile>().ManaCost);
+
 			// Matt - 5/22/2015: With Mana System, we want new checks for if we should create the projectile. Do we have the Mana required to launch this projectile?
-			float manaCost = projectilePrefab.GetComponent<Projectile>().ManaCost;
+			Projectile projectile = projectilePrefab.GetComponent<Projectile>();
+			float manaCost = projectile.ManaCost;
 			if (manaCost <= playerTower.Mana)
 			{
 				// Drain the player's Mana by the appropriate amount.
@@ -83,13 +85,23 @@ public class FlingProjectilePrediction : MonoBehaviour
 
 				// Create the appropriate projectile by Instantiating its prefab.
 				GameObject newProjectile = (GameObject)Instantiate(projectilePrefab, gameObject.transform.position, projectilePrefab.transform.rotation);
+
+
+				// Begin new Changes 5/27, Matt
+				Projectile newProj = newProjectile.GetComponent<Projectile>();
+				if (newProj.arcHeight != 0 && newProj.Speed != 0)				// Change later once each Projectile Prefab has these values defined.
+				{
+					extraHeight = newProj.arcHeight;
+					throwForce = newProj.Speed;
+				}
+
+				// End new changes. Remove these lines if anything odd begins to happen.
+
 				newProjectile.GetComponent<Rigidbody>().AddForce( GetThrowForce() );
 				
 				line.SetVertexCount(0);
 				impactMarker.SetActive(false);
 				mouseStartDragPos = Vector2.zero;
-
-			
 			}
 
 		}
@@ -104,6 +116,7 @@ public class FlingProjectilePrediction : MonoBehaviour
 	Vector3 GetThrowForce()
 	{
 		Vector2 throwDir = GetThrowDirection();
+		Debug.Log("Extra Height: " + extraHeight + ", Throw Force: " + throwForce);
 		return new Vector3(throwDir.x, extraHeight, throwDir.y);
 	}
 	
