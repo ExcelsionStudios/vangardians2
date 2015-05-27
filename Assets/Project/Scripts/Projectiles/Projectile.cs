@@ -10,6 +10,10 @@ public class Projectile : MonoBehaviour
 	public float Damage;
 	public float ManaCost;
 
+	// New: Testing on 5/27. Will set FlyingProjectilePRediction's values to match these.
+	public float Speed;
+	public float arcHeight;
+
 	// Use this for initialization
 	void Start () 
 	{
