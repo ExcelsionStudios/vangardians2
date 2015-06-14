@@ -40,14 +40,14 @@ public class VectorExtras : System.Object
 	{
 		return Random.Range(0, 2) == 0 ? true : false;
 	}
-
+	
 	//A helper function for getting the speed multiplier needed to make 'defaultLength' equal 'duration'.
 	//Mainly intended for animations as you can only change the playback speed by using multipliers and not the time in seconds.
 	public static float GetDurationMultiplier( float defaultLength, float duration )
 	{
 		return defaultLength / duration;
 	}
-
+	
 	//Rounds 'val' to the nearest step of 'snapValue'. Example: RoundTo( 1.2, 0.25 ) would return 1.25.
 	public static float RoundTo( float val, float snapValue )
 	{
@@ -212,7 +212,7 @@ public class VectorExtras : System.Object
 		Vector3 spherePoint = OffsetPosInPointDirection(origin, target, 10.0f) + (Random.insideUnitSphere * Mathf.Clamp(radius, 0.0f, 10.0f));
 		return Direction( origin, spherePoint );
 	}
-
+	
 	//===========================================
 	//=========== Size of Object ================
 	//===========================================
@@ -238,8 +238,8 @@ public class VectorExtras : System.Object
 		// the size is max-min multiplied by the object scale:
 		return Vector3.Scale(max - min, obj.transform.localScale);
 	} */
-
-
+	
+	
 	//===========================================
 	//=========== Degrees And Vectors ===========
 	//===========================================
@@ -252,11 +252,11 @@ public class VectorExtras : System.Object
 	{
 		return Mathf.Atan2( vector.y, vector.x ) * Mathf.Rad2Deg;
 	}
-
+	
 	//================================================
 	//=========== Array Utilities ====================
 	//================================================
-
+	
 	public static bool Contains<T>( object[] array, object val )
 	{
 		for(int i = 0; i < array.Length; i++)
@@ -272,10 +272,10 @@ public class VectorExtras : System.Object
 	//===========================================
 	
 	//Returns the mouse's position in the world
-	/*public static Vector2 GetMouseWorldPos()
+	public static Vector2 GetMouseWorldPos()
 	{
 		RaycastHit data;
-		if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), data, Mathf.Infinity )) 
+		if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out data, Mathf.Infinity )) 
 		{
 			return new Vector2( data.point.x, data.point.y );
 		}
@@ -283,14 +283,14 @@ public class VectorExtras : System.Object
 		{
 			return Vector2.zero;
 		}
-	}*/
+	}
 	//Returns the mouse's movement speed relative to the screen. (Get magnitude for float speed)
 	public static Vector2 GetMouseSpeedRaw()
 	{
 		return new Vector2( Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y") );
 	}
-
-
+	
+	
 	//===========================================
 	//=========== Geometrics ====================
 	//===========================================
