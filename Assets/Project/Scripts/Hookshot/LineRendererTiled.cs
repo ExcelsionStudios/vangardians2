@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Stephan - Around 6/07/2015
+
 [RequireComponent(typeof(LineRenderer))]
 public class LineRendererTiled : MonoBehaviour 
 {

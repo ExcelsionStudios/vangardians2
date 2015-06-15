@@ -1,36 +1,40 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
+
+// Stephan - Around 6/07/2015
 
 [RequireComponent(typeof(LineRenderer))]
 public class Hook : MonoBehaviour 
 {
 	public HookHead head;
-	public LineRenderer chain; //This is also what we draw our chain from.
-	public Transform connection; //This is what we draw our chain to.
-	public Transform cannon; //Our cannon head. We rotate this.
-	public float speed; //Speed our hook shoots out.
-	public float tanSpeed; //Tangental swing speed for swinging enemies around.
+	public LineRenderer chain; 		//This is also what we draw our chain from.
+	public Transform connection; 	//This is what we draw our chain to.
+	public Transform cannon; 		//Our cannon head. We rotate this.
+	public float speed; 			//Speed our hook shoots out.
+	public float tanSpeed; 			//Tangental swing speed for swinging enemies around.
 
 	private Vector2 startDragPos = Vector2.zero;
 	public Vector2[] path = new Vector2[0]; 
 	float totalAngle = 0f;
 	
-	void Start () 
+	void Start() 
 	{
-		head.gameObject.SetActive(false);
-	}
-	
+		if (head != null)
+			head.gameObject.SetActive(false);
 
-	void Update () 
+		// TODO: Create a valid head.
+	}
+
+	void Update() 
 	{
-		ReadInput ();
+		ReadInput();
 
 		//Update our line renderer.
-		if( connection != null )
+		if (connection != null)
 		{
-			chain.SetPosition(1, chain.transform.position); //This order makes it appear that chain comes out of the cannon.
+			chain.SetPosition(1, chain.transform.position); // This order makes it appear that chain comes out of the cannon.
 			chain.SetPosition(0, connection.position);
 			chain.material.mainTextureScale = new Vector2(Vector3.Distance(chain.transform.position, connection.position), 1f);
 		}
@@ -47,14 +51,14 @@ public class Hook : MonoBehaviour
 	void ReadInput()
 	{
 		//#if UNITY_STANDALONE || UNITY_WEBPLAYER
-		if( connection == null ) //Our head is not present and there is no enemy attached. (Do code for a new head)
+		if (connection == null) // Our head is not present and there is no enemy attached. (Do code for a new head)
 		{
-			if( startDragPos == Vector2.zero )
+			if (startDragPos == Vector2.zero)
 			{
-				if( Input.GetMouseButtonDown(0) )
+				if (Input.GetMouseButtonDown(0))
 				{
 					Vector2 mPos = VectorExtras.GetMouseWorldPos();
-					if( mPos.magnitude < 1.25f )
+					if (mPos.magnitude < 1.25f)
 					{
 						startDragPos = mPos;
 					}
@@ -63,33 +67,36 @@ public class Hook : MonoBehaviour
 			else
 			{
 
-				if( Input.GetMouseButton(0) ) //Player is aiming
+				if (Input.GetMouseButton(0)) // Player is aiming
 				{
 					Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos() );
 					TransformExtensions.SetRotation2D( cannon, VectorExtras.VectorToDegrees(direction) );
 				}
-				else if( Input.GetMouseButtonUp(0) ) //Player let go.
+				else if (Input.GetMouseButtonUp(0)) // Player let go.
 				{
 					Vector2 mPos = VectorExtras.GetMouseWorldPos();
 
-					head.gameObject.SetActive(true);
-					head.GetComponent<Rigidbody2D>().Sleep();
-					head.transform.position = VectorExtras.V3FromV2( -VectorExtras.OffsetPosInPointDirection( VectorExtras.V2FromV3(transform.position), mPos, 0.61f ), 0.0f );
-					head.GetComponent<Rigidbody2D>().AddForce( VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(head.transform.position)) * speed);
-					connection = head.transform;
+					// Matt: Added this -- was getting errors when messing around. TODO: Ensure valid head since this will ruin further calculations.
+					if (head != null)
+					{
+						head.gameObject.SetActive(true);
+						head.GetComponent<Rigidbody2D>().Sleep();
+						head.transform.position = VectorExtras.V3FromV2( -VectorExtras.OffsetPosInPointDirection( VectorExtras.V2FromV3(transform.position), mPos, 0.61f ), 0.0f );
+						head.GetComponent<Rigidbody2D>().AddForce( VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(head.transform.position)) * speed);
+						connection = head.transform;
+					}
 
 					startDragPos = Vector2.zero;
 				}
 			}
 		}
-		else //Either an enemy is attached or a head.
+		else // Either an enemy is attached or a head.
 		{
-			//Always look at our connection.
-			//Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position) );
-			TransformExtensions.SetRotation2D( cannon, VectorExtras.VectorToDegrees(VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position) )) );
-			
-			
-			if( head.isActiveAndEnabled == true )
+			// Always look at our connection.
+			// Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position) );
+			TransformExtensions.SetRotation2D(cannon, VectorExtras.VectorToDegrees(VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position))));
+
+			if (head.isActiveAndEnabled == true)
 			{
 				//Do nothing (for now)
 			}
@@ -104,18 +111,14 @@ public class Hook : MonoBehaviour
 				dj.connectedAnchor = VectorExtras.V2FromV3( transform.position );
 				dj.distance = Vector3.Distance( transform.position, connection.position );
 
-
-
 				//This is an array of positions of the mouse. This next bit is gonna be complicated.
 
-
-
-				if( startDragPos == Vector2.zero )
+				if (startDragPos == Vector2.zero)
 				{
-					if( Input.GetMouseButtonDown(0) )
+					if (Input.GetMouseButtonDown(0))
 					{
 						Vector2 mPos = VectorExtras.GetMouseWorldPos();
-						if( Vector2.Distance(mPos, VectorExtras.V2FromV3(connection.position)) < 3.0f ) //Make sure we're starting the click somewhat close to our hooked enemy.
+						if (Vector2.Distance(mPos, VectorExtras.V2FromV3(connection.position)) < 3.0f) //Make sure we're starting the click somewhat close to our hooked enemy.
 						{
 							startDragPos = mPos;
 
@@ -143,7 +146,7 @@ public class Hook : MonoBehaviour
 						totalAngle += deltaAng;
 
 					}
-					else if( Input.GetMouseButtonUp(0) ) //Player let go.
+					else if (Input.GetMouseButtonUp(0)) //Player let go.
 					{
 						path = ArrayTools.PushLast<Vector2>(path, mPos);
 						Vector2 playerDir = VectorExtras.Direction( VectorExtras.V2FromV3(connection.position), VectorExtras.V2FromV3(this.transform.position) );
@@ -171,9 +174,6 @@ public class Hook : MonoBehaviour
 									connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed * (totalAngle / 36f));
 									//DONT let go of the enemy yet. (Maybe if its dead?)
 
-
-
-
 									break;
 								}
 								if( i == path.Length - 1 )
@@ -183,28 +183,19 @@ public class Hook : MonoBehaviour
 									connection = null;
 								}
 							}
-
-
 						}
 						else
 						{
 							//Apply swing forces.
 
 							connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed * (totalAngle / 36f));
-
 						}
 
 						startDragPos = Vector2.zero;
-
 					}
 				}
-
 			}
-
 		}
-
-
-
 
 		/*
 					else if( Input.GetMouseButtonUp(0) ) //Player let go.
@@ -281,10 +272,4 @@ public class Hook : MonoBehaviour
 	{
 		return 0f;//lineRenderer.Set
 	} */
-
-
-
-
-
-
 }

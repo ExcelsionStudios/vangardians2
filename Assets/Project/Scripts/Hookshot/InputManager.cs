@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Stephan -- Around 6/07/2015
 
 public class InputManager : MonoBehaviour 
 {
 	public static InputManager instance;
-
-
 
 	void Awake () 
 	{
@@ -15,7 +14,6 @@ public class InputManager : MonoBehaviour
 		else
 			Destroy( this );
 	}
-	
 
 	void Update () 
 	{
