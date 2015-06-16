@@ -15,6 +15,8 @@ public class HookShot : MonoBehaviour {
 	public Vector2 lastMousePosition;
 	public GameObject hookHead;
 	public float hookSpeed;
+	public float shootingDistance;
+	public Transform hookStartPosition;
 	bool mouseClicked = false;
 	bool shootHook = false;
 
@@ -48,6 +50,7 @@ public class HookShot : MonoBehaviour {
 		if (Input.GetKeyUp (KeyCode.Mouse0) && mouseClicked) {  //If mouse drag ended stop updating direction
 			mouseClicked = false;
 			shootHook = true;
+			shootingDistance = Vector3.Distance (Camera.main.ScreenToWorldPoint(initialMousePosition), Camera.main.ScreenToWorldPoint(lastMousePosition));
 
 		}
 		if (mouseClicked) { 
@@ -55,11 +58,21 @@ public class HookShot : MonoBehaviour {
 			getDirection ();
 		}
 		/******Mouse Stuff******/
-		if (shootHook) {  // Shoots the hook
+
+
+
+
+		if (shootHook && Vector3.Distance (hookHead.transform.position, gameObject.transform.position) <= shootingDistance) {  // Shoots the hook
 			hookHead.transform.position += hookHead.gameObject.transform.forward * hookSpeed;
+		} else {
+			hookHead.transform.position = Vector3.MoveTowards(hookHead.transform.position,hookStartPosition.position, hookSpeed);
+			shootingDistance = 0;
 		}
-			//Updates the direction of the marker
-			gameObject.transform.rotation = Quaternion.LookRotation (new Vector3(direction.x, 0 , direction.y));
+
+
+
+		//Updates the direction of the marker
+		gameObject.transform.rotation = Quaternion.LookRotation (new Vector3(direction.x, 0 , direction.y));
 	}
 
 	void getDirection(){

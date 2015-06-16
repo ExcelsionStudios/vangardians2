@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 
-[ExecuteInEditMode()] 
+
 public class LookAt : MonoBehaviour {
 
 	public Transform target;
