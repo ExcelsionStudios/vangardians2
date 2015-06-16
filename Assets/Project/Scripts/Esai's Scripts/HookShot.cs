@@ -50,7 +50,7 @@ public class HookShot : MonoBehaviour {
 			shootHook = true;
 
 		}
-		if (mouseClicked) { //Does the actual direction updates
+		if (mouseClicked) { 
 			lastMousePosition = Input.mousePosition;
 			getDirection ();
 		}

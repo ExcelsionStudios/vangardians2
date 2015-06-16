@@ -8,7 +8,7 @@ public class SimpleChain : MonoBehaviour {
 
 	// Use this for initialization
 	public LineRenderer myLine;
-	public Transform target;
+	public Transform chainHead;
 	public Transform chainBase;
 	void Start () {
 	
@@ -17,7 +17,7 @@ public class SimpleChain : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		myLine.SetPosition (0, chainBase.position);
-		myLine.SetPosition (1, target.position);
+		myLine.SetPosition (1, chainHead.position);
 
 	}
 }
