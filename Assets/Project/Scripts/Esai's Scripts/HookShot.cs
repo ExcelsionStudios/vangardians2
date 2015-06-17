@@ -17,8 +17,12 @@ public class HookShot : MonoBehaviour {
 	public float hookSpeed;
 	public float shootingDistance;
 	public Transform hookStartPosition;
+	public GameObject hookedObject;
 	bool mouseClicked = false;
 	bool shootHook = false;
+	bool enemyHooked = false;
+	bool throwObject = false;
+
 
 	void Start () {
 	
@@ -34,8 +38,10 @@ public class HookShot : MonoBehaviour {
 			if (Input.GetTouch (0).phase == TouchPhase.Ended && mouseClicked) { //If touch has ended stop updating direction
 				mouseClicked = false;
 				shootHook = true;
+				shootingDistance = Vector3.Distance (Camera.main.ScreenToWorldPoint(initialMousePosition), Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position));
+
 			}
-			if (Input.GetTouch (0).phase == TouchPhase.Moved) { //If touch is continuing update direction 
+			if (Input.GetTouch (0).phase == TouchPhase.Moved && mouseClicked) { //If touch is continuing update direction 
 				lastMousePosition = Input.GetTouch(0).position;
 				getDirection();
 			}
@@ -64,9 +70,33 @@ public class HookShot : MonoBehaviour {
 
 		if (shootHook && Vector3.Distance (hookHead.transform.position, gameObject.transform.position) <= shootingDistance) {  // Shoots the hook
 			hookHead.transform.position += hookHead.gameObject.transform.forward * hookSpeed;
-		} else {
+		} else if(!enemyHooked){
 			hookHead.transform.position = Vector3.MoveTowards(hookHead.transform.position,hookStartPosition.position, hookSpeed);
 			shootingDistance = 0;
+		}
+
+		if (Input.GetKey (KeyCode.Mouse0) && enemyHooked) {
+			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+			//Debug.DrawRay (ray.origin, ray.direction * 50, Color.red);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit, 50)) {
+				if(hit.collider.gameObject == hookedObject){
+					throwObject = true;
+				}
+			}
+
+		}
+		if (throwObject) {
+			//get direction of throw
+			Vector2 throwDirection = (hookedObject.transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition))/(hookedObject.transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition)).magnitude;
+			Ray throwRay = new Ray(hookedObject.transform.position, new Vector3(throwDirection.x, 0 , throwDirection.y));
+			RaycastHit hit;
+			Debug.DrawRay (throwRay.origin, throwRay.direction * 50, Color.red);
+			if(Physics.Raycast(throwRay, out hit, 50)){
+				if(hit.collider.gameObject.tag == "Player"){
+					Destroy (gameObject);
+				}
+			}
 		}
 
 
@@ -82,5 +112,10 @@ public class HookShot : MonoBehaviour {
 	void OnMouseDown(){
 		initialMousePosition = Input.mousePosition;
 		mouseClicked = true;
+	}
+
+	public void HookEnemy(GameObject objectHooked){
+		enemyHooked = true;
+		hookedObject = objectHooked;
 	}
 }
