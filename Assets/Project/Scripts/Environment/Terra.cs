@@ -9,7 +9,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class Terrain : MonoBehaviour
+public class Terra : MonoBehaviour
 {
 	public int LevelNum = 1;
 
@@ -23,19 +23,19 @@ public class Terrain : MonoBehaviour
 		{
 		case 2:
 			SetActiveParts(true, true, false);
-			MoveCameraTo(new Vector3 (0,30,-15));
+			MoveTo(new Vector3 (0,10,0));
 			break;
 		case 3:
 			SetActiveParts(true, false, false);
-			MoveCameraTo(new Vector3 (0,30,-18));
+			MoveTo(new Vector3 (0,20,0));
 			break;
 		case 4:
 			SetActiveParts(false, false, false);
-			MoveCameraTo(new Vector3 (0,30,-20));
+			MoveTo(new Vector3 (0,28,0));
 			break;
 		default:
 			SetActiveParts(true, true, true);
-			MoveCameraTo(new Vector3 (0,30,-11));
+			MoveTo(new Vector3 (0,0,0));
 			break;
 		}
 	}
@@ -45,8 +45,8 @@ public class Terrain : MonoBehaviour
 		TerrainMid.SetActive(mid);
 		TerrainGround.SetActive(bottom);
 	}
-	private void MoveCameraTo(Vector3 moveToPos)
+	private void MoveTo(Vector3 moveToPos)
 	{
-		Camera.main.GetComponent<LerpChangePosition>().WaitAndMove(moveToPos);
+		GetComponent<LerpChangePosition>().WaitAndMove(moveToPos);
 	}
 }

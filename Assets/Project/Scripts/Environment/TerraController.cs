@@ -9,9 +9,9 @@
 using UnityEngine;
 using System.Collections;
 
-public class TerrainController : MonoBehaviour
+public class TerraController : MonoBehaviour
 {
-	public GameObject Terrain_;
+	public GameObject Terra;
 
 	private int LevelNum;
 
@@ -24,6 +24,6 @@ public class TerrainController : MonoBehaviour
 	{
 		LevelNum = (int)GetComponent<UnityEngine.UI.Slider>().value;;
 		Debug.Log("Level Changed to " + LevelNum);
-		Terrain_.GetComponent<Terrain>().ChouseLevel(LevelNum);
+		Terra.GetComponent<Terra>().ChouseLevel(LevelNum);
 	}
 }
