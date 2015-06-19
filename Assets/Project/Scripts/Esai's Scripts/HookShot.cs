@@ -22,6 +22,9 @@ public class HookShot : MonoBehaviour {
 	bool shootHook = false;
 	bool enemyHooked = false;
 	bool throwObject = false;
+	Vector2 throwDirection;
+	bool slam = false;
+	float slamDistance;
 
 
 	void Start () {
@@ -82,23 +85,27 @@ public class HookShot : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, 50)) {
 				if(hit.collider.gameObject == hookedObject){
 					throwObject = true;
+					slamDistance = Vector3.Distance(hookedObject.transform.position, gameObject.transform.position);
 				}
 			}
 
 		}
 		if (throwObject) {
 			//get direction of throw
-			Vector2 throwDirection = (hookedObject.transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition))/(hookedObject.transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition)).magnitude;
+			throwDirection = -(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition)/(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition).magnitude;
 			Ray throwRay = new Ray(hookedObject.transform.position, new Vector3(throwDirection.x, 0 , throwDirection.y));
 			RaycastHit hit;
 			Debug.DrawRay (throwRay.origin, throwRay.direction * 50, Color.red);
 			if(Physics.Raycast(throwRay, out hit, 50)){
 				if(hit.collider.gameObject.tag == "Player"){
-					Destroy (gameObject);
+					slam = true;
 				}
 			}
 		}
 
+		if (slam) {
+			hookedObject.transform.position = throwDirection * hookSpeed;
+		}
 
 
 		//Updates the direction of the marker
