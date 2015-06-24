@@ -39,11 +39,15 @@ public class SimpleHook : MonoBehaviour
 
 	void Update() 
 	{
-		smoothedDragPos = Vector3.SmoothDamp(smoothedDragPos, VectorExtras.V3FromV2(VectorExtras.GetMouseWorldPos(),0f), ref smoothedVel, dragSmoothing);
+
+		//Vector2 pushedPos = VectorExtras.OffsetPosInPointDirection( VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos(), 3f );
+		//Vector2 pushedPos = VectorExtras.MinAnchoredMovePosTowardTarget(VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos(), 3f, 3f );
+		smoothedDragPos = Vector3.SmoothDamp(smoothedDragPos, VectorExtras.V3FromV2(VectorExtras.GetMouseWorldPos(),0f), ref smoothedVel, dragSmoothing, 9999f);
 		if( startDragPos != Vector2.zero )
 		{
 			Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(smoothedDragPos) );
 			TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
+			Debug.Log( smoothedVel.magnitude );
 		}
 
 		//swipeDetector
@@ -178,11 +182,21 @@ public class SimpleHook : MonoBehaviour
 						if( noTouchy == false )
 						{
 							//Debug.Log("Has not touched wall!");
-							if( deltaAng > slamSensitivity )
+
+							if( swipeDetector.GetComponentInChildren<CircleCollider2D>().OverlapPoint( mPos ) )
+							{
+								if( smoothedVel.magnitude > 5.0f )
+								{
+									StartCoroutine( Slam() );
+									return;
+								}
+							}
+							
+							/*if( deltaAng > slamSensitivity )
 							{
 								StartCoroutine( Slam() );
 								return;
-							}
+							} */
 						}
 
 
