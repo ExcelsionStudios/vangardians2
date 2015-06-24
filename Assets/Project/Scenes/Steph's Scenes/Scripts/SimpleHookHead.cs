@@ -43,12 +43,13 @@ public class SimpleHookHead : MonoBehaviour
 	void OnTriggerEnter2D( Collider2D col ) //This apparently will run even if our gameobject is disabled! (Says on wiki)
 	{
 		//TODO CHECK IF VALID TARGET HERE!
-		if( col.tag == "Enemy" )
+		if( col.tag == "Enemy" && hit == null )
 		{
 			Debug.Log("Hookhead hit: " + col.transform.name );
 			hit = col.transform;
 
 			SimpleHook.SetEnemyControl(col.gameObject, false); //Take control away from the enemy. YOU'RE MINE NOW! >:D
+			col.gameObject.layer = LayerMask.NameToLayer("Enemy");
 
 			hit.parent = this.transform;
 		}

@@ -7,7 +7,6 @@ using System.Collections;
 //NOTE: This script works very closely with SimpleHookHead.cs 
 //      Not meant to be used standalone!
 
-[RequireComponent(typeof(LineRenderer))]
 public class SimpleHook : MonoBehaviour 
 {
 	public SimpleHookHead head;
@@ -16,7 +15,7 @@ public class SimpleHook : MonoBehaviour
 	public Transform cannon; 		//Our cannon head. We rotate this.
 
 	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
-	public float maxHookDistance = 0.8f;  //Max distance our hook will travel.
+	public float maxHookDistance = 4f;  //Max distance our hook will travel.
 	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
 	public float slamSensitivity = 90.0f; //If our delta angle is larger than this while dragging, it triggers a slam.
 
@@ -173,10 +172,17 @@ public class SimpleHook : MonoBehaviour
 			}
 		}
 	}
-	public float debugT = 0f;
+
 	private bool inSlam = false;
 	IEnumerator Slam() //Animate our slam, then do damage to enemies in radius.
 	{
+		//SlamEvent is any custom behaviours the enemy has defined. (Such as taking damage, or exploding..)
+		SlamBehaviour slamEvent = connection.GetComponent<SlamBehaviour>();
+		if( slamEvent != null )
+			slamEvent.OnSlamStart();
+		else
+			Debug.LogWarning("Enemy has no SlamBehaviour component. Slamming this enemy wont do much.", this);
+
 		startDragPos = Vector2.zero;
 		inSlam = true;
 		connection.parent = cannon;
@@ -188,26 +194,28 @@ public class SimpleHook : MonoBehaviour
 		{
 			//TODO make this not able to overshoot, add Time.deltaTime multiplier
 			t += slamVelocity;
-			//cannon.rotation = Quaternion.Slerp(startRot, targetRotation, debugT);
-			cannon.RotateAround( cannon.position, cannon.up, slamVelocity );
-			//TODO scale needs to be world and not local. This gets the idea across for now though.
-			connection.localScale = new Vector3(enemyScaling.Evaluate(t / 180f), enemyScaling.Evaluate(t / 180f), enemyScaling.Evaluate(t / 180f));
-			yield return new WaitForEndOfFrame();
-		}
-		//Exit
+			float progress = t / 180.0f;
 
-		Debug.LogWarning("Slam Done");
+			cannon.RotateAround( cannon.position, cannon.up, slamVelocity );
+
+			if( slamEvent != null )
+				slamEvent.OnSlamUpdate( progress );
+			//TODO scale needs to be world and not local. This gets the idea across for now though.
+			//TODO maybe move the scale thing to a SlamBehaviour?
+			connection.localScale = new Vector3(enemyScaling.Evaluate(progress), enemyScaling.Evaluate(progress), enemyScaling.Evaluate(progress));
+			yield return null;
+		}
+
+		//Exit
+		Debug.LogWarning("Slam Done!", this);
 		SetEnemyControl(connection.gameObject, true);
 		connection.localScale = Vector3.one;
 
-		DoSlamEffects();
+		if( slamEvent != null )
+			slamEvent.OnSlamEnd();
 
 		connection = null;
 		inSlam = false;
-	}
-	void DoSlamEffects() //Deal damage to connection (enemy) or whatever you want to here.
-	{
-
 	}
 
 	public void OnHeadHit( Transform t )
