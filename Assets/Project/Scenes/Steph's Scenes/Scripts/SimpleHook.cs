@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Collections;
 
-//Stephan Ennen - 6/18/15
+//Stephan Ennen - 6/24/15
+
+//NOTE: This script works very closely with SimpleHookHead.cs 
+//      Not meant to be used standalone!
 
 [RequireComponent(typeof(LineRenderer))]
 public class SimpleHook : MonoBehaviour 
@@ -12,8 +15,9 @@ public class SimpleHook : MonoBehaviour
 	public Transform connection; 	//This is what we draw our chain to.
 	public Transform cannon; 		//Our cannon head. We rotate this.
 
-	public float speed; 			      //Speed our hook shoots out.
-	public float slamVelocity = 10.0f;    //Essentially the animation speed when slamming an enemy.
+	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
+	public float maxHookDistance = 0.8f;  //Max distance our hook will travel.
+	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
 	public float slamSensitivity = 90.0f; //If our delta angle is larger than this while dragging, it triggers a slam.
 
 	public AnimationCurve enemyScaling; //Scale multiplier of enemy as they are tossed.
@@ -80,11 +84,8 @@ public class SimpleHook : MonoBehaviour
 					if (head != null)
 					{
 						head.gameObject.SetActive(true);
-						head.GetComponent<Rigidbody2D>().Sleep();
-						//TODO incorporate some kind of manual code to ensure the enemy always gets pushed to the position opposite of our mouse.
 						head.transform.position = VectorExtras.V3FromV2( -VectorExtras.OffsetPosInPointDirection( VectorExtras.V2FromV3(transform.position), mPos, 0.61f ), 0.0f );
-						head.GetComponent<Rigidbody2D>().AddForce( VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(head.transform.position)) * speed);
-						head.distanceTimeout = Vector3.Distance( VectorExtras.V3FromV2( mPos, 0 ), this.transform.position );
+						head.Fire(hookSpeed, Mathf.Min(Vector3.Distance(VectorExtras.V3FromV2( mPos, 0f ), this.transform.position), maxHookDistance));
 
 						connection = head.transform;
 					}
@@ -106,19 +107,6 @@ public class SimpleHook : MonoBehaviour
 			else
 			{
 				//The head is not present. We must have an enemy.
-
-				/* //I dont think this control will need a joint. (We will control position manually.)
-				connection.GetComponent<Rigidbody2D>().isKinematic = false;
-				DistanceJoint2D dj = connection.GetComponent<DistanceJoint2D>();
-				if( dj == null )
-					dj = connection.gameObject.AddComponent<DistanceJoint2D>();
-				
-				dj.connectedAnchor = VectorExtras.V2FromV3( transform.position );
-				dj.distance = Vector3.Distance( transform.position, connection.position );
-				*/
-
-				//This is an array of positions of the mouse. This next bit is gonna be complicated.
-				
 				if (startDragPos == Vector2.zero)
 				{
 					if (Input.GetMouseButtonDown(0))
@@ -127,9 +115,10 @@ public class SimpleHook : MonoBehaviour
 						if (Vector2.Distance(mPos, VectorExtras.V2FromV3(connection.position)) < 3.0f) //Make sure we're starting the click somewhat close to our hooked enemy.
 						{
 							startDragPos = mPos;
-							
+
 							path = new Vector2[0];
 							path = ArrayTools.PushLast<Vector2>(path, mPos);
+
 							totalAngle = 0f;
 						}
 					}
@@ -143,7 +132,7 @@ public class SimpleHook : MonoBehaviour
 
 						//Keeping this in case we want to be able to "throw" an enemy in a circle later.
 						Vector2 lastPos = path[path.Length-1];
-						path = ArrayTools.PushLast<Vector2>(path, mPos);
+						path = ArrayTools.PushLast<Vector2>(path, mPos); //TODO this array will get quite large for extended touches!
 						
 						//We calculate the angle from last frame's position to this frame's position, then add it to totalAngle.
 						Vector2 prev = VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), lastPos); //This will cause problems if the player moves!
@@ -154,11 +143,11 @@ public class SimpleHook : MonoBehaviour
 
 						//Look to see if our detlta angle was of a certian size. 
 						//If large enough, we can assume that the path was a slam. Forcefully end the touch logic if this is the case.
-						//TODO This detection is vulnerable to lag!!!!
+						//TODO This detection is vulnerable to lag!!!! (Add some sort of time.deltatime)
+						//TODO make this detection more accurate.
 						if( deltaAng > slamSensitivity )
 						{
 							StartCoroutine( Slam() );
-							startDragPos = Vector2.zero; //Setting this exits logic.
 							return;
 						}
 
@@ -167,13 +156,10 @@ public class SimpleHook : MonoBehaviour
 						Vector3 mousePosV3 = VectorExtras.V3FromV2( mPos, 0f );
 						connection.transform.position = VectorExtras.OffsetPosInPointDirection(transform.position, mousePosV3, Vector3.Distance(transform.position, connection.position)); //TODO track touch offset at beginning of touch.
 
-
-						
 					}
 					else if (Input.GetMouseButtonUp(0)) //Player let go.
 					{
 						path = ArrayTools.PushLast<Vector2>(path, mPos);
-						Vector2 playerDir = VectorExtras.Direction( VectorExtras.V2FromV3(connection.position), VectorExtras.V2FromV3(this.transform.position) );
 
 
 						//Apply our swing physics here if we want it.
@@ -191,9 +177,12 @@ public class SimpleHook : MonoBehaviour
 	private bool inSlam = false;
 	IEnumerator Slam() //Animate our slam, then do damage to enemies in radius.
 	{
+		startDragPos = Vector2.zero;
 		inSlam = true;
 		connection.parent = cannon;
-		//TODO disable physics on the connection until this is done, disable enemy movement code.
+
+		SetEnemyControl(connection.gameObject, false);
+
 		float t = 0f;
 		while( t < 180f )
 		{
@@ -208,19 +197,45 @@ public class SimpleHook : MonoBehaviour
 		//Exit
 
 		Debug.LogWarning("Slam Done");
-		connection.parent = null;
+		SetEnemyControl(connection.gameObject, true);
 		connection.localScale = Vector3.one;
+
+		DoSlamEffects();
+
 		connection = null;
 		inSlam = false;
+	}
+	void DoSlamEffects() //Deal damage to connection (enemy) or whatever you want to here.
+	{
+
 	}
 
 	public void OnHeadHit( Transform t )
 	{
 		//When our head object hits a collider.
 		connection = t;
-		head.GetComponent<Rigidbody2D>().Sleep();
+
+		//TODO we may want to set enemy control to false here.
+
 		head.gameObject.SetActive(false);
 	}
+
+	////////////////// UTILITY FUNCTIONS /////////////
+
+	//This function assumes a lot of things about the enemy gameobject, at least until we know what our enemies will look like.
+	public static void SetEnemyControl( GameObject enemy, bool state ) //True gives control, false removes it.
+	{
+		enemy.GetComponent<Rigidbody2D>().isKinematic = !state;
+		enemy.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
+
+		if( state == true ) 
+			enemy.transform.parent = null;
+	}
+
+
+
+
+
 
 
 
