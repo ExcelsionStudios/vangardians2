@@ -20,8 +20,8 @@ public class HookShot : MonoBehaviour {
 	public GameObject hookedObject;
 	bool mouseClicked = false;
 	bool shootHook = false;
-	bool enemyHooked = false;
-	bool throwObject = false;
+	public bool enemyHooked = false;
+	public bool throwObject = false;
 	Vector2 throwDirection;
 	bool slam = false;
 	float slamDistance;
@@ -65,6 +65,7 @@ public class HookShot : MonoBehaviour {
 		if (mouseClicked) { 
 			lastMousePosition = Input.mousePosition;
 			getDirection ();
+			gameObject.transform.rotation = Quaternion.LookRotation (new Vector3(direction.x, 0 , direction.y));
 		}
 		/******Mouse Stuff******/
 
@@ -92,24 +93,38 @@ public class HookShot : MonoBehaviour {
 		}
 		if (throwObject) {
 			//get direction of throw
-			throwDirection = -(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition)/(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition).magnitude;
-			Ray throwRay = new Ray(hookedObject.transform.position, new Vector3(throwDirection.x, 0 , throwDirection.y));
-			RaycastHit hit;
-			Debug.DrawRay (throwRay.origin, throwRay.direction * 50, Color.red);
-			if(Physics.Raycast(throwRay, out hit, 50)){
-				if(hit.collider.gameObject.tag == "Player"){
-					slam = true;
+
+			if(Input.GetKeyUp(KeyCode.Mouse0)){
+				throwDirection = -(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition)/(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition).magnitude;
+				Ray throwRay = new Ray(hookedObject.transform.position, new Vector3(throwDirection.x, 0 , throwDirection.y));
+
+				Debug.DrawRay (throwRay.origin, throwRay.direction * 50, Color.red);
+
+				RaycastHit hit;
+
+				if(Physics.Raycast(throwRay, out hit)){
+					//Debug.Log(hit.collider.name);
+
+					if(hit.collider.tag == "Player"){
+						//Debug.Log("fuckkk yeah");
+						gameObject.GetComponent<Slam>().enabled = true;
+					
+					}
+					else{
+						gameObject.GetComponent<Swing>().enabled = true;
+					}
+
 				}
 			}
+
+
 		}
 
-		if (slam) {
-			hookedObject.transform.position = throwDirection * hookSpeed;
-		}
+
 
 
 		//Updates the direction of the marker
-		gameObject.transform.rotation = Quaternion.LookRotation (new Vector3(direction.x, 0 , direction.y));
+
 	}
 
 	void getDirection(){
