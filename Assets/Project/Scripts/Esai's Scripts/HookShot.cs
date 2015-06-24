@@ -20,8 +20,8 @@ public class HookShot : MonoBehaviour {
 	public GameObject hookedObject;
 	bool mouseClicked = false;
 	bool shootHook = false;
-	bool enemyHooked = false;
-	bool throwObject = false;
+	public bool enemyHooked = false;
+	public bool throwObject = false;
 	Vector2 throwDirection;
 	bool slam = false;
 	float slamDistance;
@@ -110,6 +110,9 @@ public class HookShot : MonoBehaviour {
 						gameObject.GetComponent<Slam>().enabled = true;
 					
 					}
+					else{
+						gameObject.GetComponent<Swing>().enabled = true;
+					}
 
 				}
 			}
@@ -117,9 +120,7 @@ public class HookShot : MonoBehaviour {
 
 		}
 
-		if (slam) {
-			hookedObject.transform.position = throwDirection * hookSpeed;
-		}
+
 
 
 		//Updates the direction of the marker
