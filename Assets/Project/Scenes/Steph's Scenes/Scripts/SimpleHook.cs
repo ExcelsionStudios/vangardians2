@@ -13,6 +13,7 @@ public class SimpleHook : MonoBehaviour
 	public LineRenderer chain; 		//This is also what we draw our chain from.
 	public Transform connection; 	//This is what we draw our chain to.
 	public Transform cannon; 		//Our cannon head. We rotate this.
+	public Transform swipeDetector; //Helps detect swipes.
 
 	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
 	public float maxHookDistance = 4f;  //Max distance our hook will travel.
@@ -23,6 +24,7 @@ public class SimpleHook : MonoBehaviour
 
 	private Vector2 startDragPos = Vector2.zero;
 	public Vector2[] path = new Vector2[0]; 
+	public bool[] wallTouches = new bool[0];
 	float totalAngle = 0f;
 
 	void Start () 
@@ -31,8 +33,22 @@ public class SimpleHook : MonoBehaviour
 			head.gameObject.SetActive(false);
 	}
 
+	public float dragSmoothing;
+	private Vector3 smoothedDragPos = Vector3.zero;
+	private Vector3 smoothedVel;
+
 	void Update() 
 	{
+		smoothedDragPos = Vector3.SmoothDamp(smoothedDragPos, VectorExtras.V3FromV2(VectorExtras.GetMouseWorldPos(),0f), ref smoothedVel, dragSmoothing);
+		if( startDragPos != Vector2.zero )
+		{
+			Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(smoothedDragPos) );
+			TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
+		}
+
+		//swipeDetector
+
+
 		if( inSlam == false )
 			ReadInput();
 		
@@ -117,6 +133,8 @@ public class SimpleHook : MonoBehaviour
 
 							path = new Vector2[0];
 							path = ArrayTools.PushLast<Vector2>(path, mPos);
+							wallTouches = new bool[0];
+							wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
 
 							totalAngle = 0f;
 						}
@@ -132,6 +150,7 @@ public class SimpleHook : MonoBehaviour
 						//Keeping this in case we want to be able to "throw" an enemy in a circle later.
 						Vector2 lastPos = path[path.Length-1];
 						path = ArrayTools.PushLast<Vector2>(path, mPos); //TODO this array will get quite large for extended touches!
+						wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
 						
 						//We calculate the angle from last frame's position to this frame's position, then add it to totalAngle.
 						Vector2 prev = VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), lastPos); //This will cause problems if the player moves!
@@ -144,11 +163,29 @@ public class SimpleHook : MonoBehaviour
 						//If large enough, we can assume that the path was a slam. Forcefully end the touch logic if this is the case.
 						//TODO This detection is vulnerable to lag!!!! (Add some sort of time.deltatime)
 						//TODO make this detection more accurate.
-						if( deltaAng > slamSensitivity )
+
+						bool noTouchy = false;
+						for( int i = Mathf.Max((path.Length - 5), 0); i < path.Length; i++ ) //Search back up to 4 frames.
 						{
-							StartCoroutine( Slam() );
-							return;
+							if( wallTouches[i] == false )
+								continue;
+							else
+							{
+								noTouchy = true;
+								break;
+							}
 						}
+						if( noTouchy == false )
+						{
+							//Debug.Log("Has not touched wall!");
+							if( deltaAng > slamSensitivity )
+							{
+								StartCoroutine( Slam() );
+								return;
+							}
+						}
+
+
 
 
 						//Move our enemy.
@@ -159,7 +196,7 @@ public class SimpleHook : MonoBehaviour
 					else if (Input.GetMouseButtonUp(0)) //Player let go.
 					{
 						path = ArrayTools.PushLast<Vector2>(path, mPos);
-
+						wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
 
 						//Apply our swing physics here if we want it.
 
@@ -226,6 +263,15 @@ public class SimpleHook : MonoBehaviour
 		//TODO we may want to set enemy control to false here.
 
 		head.gameObject.SetActive(false);
+	}
+
+	public bool GetMouseHitSides( Vector2 mousePos )
+	{
+		BoxCollider2D[] walls = swipeDetector.GetComponents<BoxCollider2D>();
+		if( walls[0].OverlapPoint(mousePos) || walls[1].OverlapPoint(mousePos) )
+			return true;
+		else
+			return false;
 	}
 
 	////////////////// UTILITY FUNCTIONS /////////////
