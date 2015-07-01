@@ -20,7 +20,9 @@ public class HookEnemy : MonoBehaviour
 			col.gameObject.GetComponent<Rigidbody>().isKinematic = true;
 
 			// We don't want the Enemy to still be able to move: He's stuck by the hook!
-			col.gameObject.GetComponent<MoveTo>().enabled = false;
+			MoveTo moveToScript = col.gameObject.GetComponent<MoveTo>();
+			if (moveToScript != null)
+				moveToScript.enabled = false;
 
 			GameObject myHalo = (GameObject)Instantiate(haloPrefab, col.gameObject.transform.position, haloPrefab.transform.rotation);
 			myHalo.transform.parent = col.gameObject.transform;
@@ -32,6 +34,10 @@ public class HookEnemy : MonoBehaviour
 	{
 		if (col.gameObject.tag == "Enemy") 
 		{
+			// This seems to fix the line 41 NullReferenceException.
+			if (hookShot == null || hookShot.hookedObject == null)
+				return;
+
 			hookShot.hookedObject.GetComponent<Rigidbody>().isKinematic = false;	// Matt: This line gives NullReferenceException. Seems to be when a Hooked Enemy touches another enemy.
 			hookShot.hookedObject = null;
 			
