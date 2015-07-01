@@ -32,14 +32,14 @@ public class HookEnemy : MonoBehaviour
 
 	void OnTriggerExit(Collider col)
 	{
-		if (col.gameObject.tag == "Enemy") 
+		if (col.gameObject == hookShot.hookedObject) 
 		{
 			// This seems to fix the line 41 NullReferenceException.
 			if (hookShot == null || hookShot.hookedObject == null)
 				return;
 
 			hookShot.hookedObject.GetComponent<Rigidbody>().isKinematic = false;	// Matt: This line gives NullReferenceException. Seems to be when a Hooked Enemy touches another enemy.
-			hookShot.hookedObject = null;
+			//hookShot.hookedObject = null;
 			
 			foreach (Transform child in col.gameObject.transform) 
 			{
