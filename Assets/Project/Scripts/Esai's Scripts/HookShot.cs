@@ -1,15 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HookShot : MonoBehaviour {
-	
-	
-	//Script by Esai Solorio
-	//June 15, 2015
-	
-	
-	
-	// Use this for initialization
+//Script by Esai Solorio
+//June 15, 2015
+
+public class HookShot : MonoBehaviour 
+{
 	public Vector2 direction;
 	public Vector2 initialMousePosition;
 	public Vector2 lastMousePosition;
@@ -25,15 +21,15 @@ public class HookShot : MonoBehaviour {
 	Vector2 throwDirection;
 	bool slam = false;
 	float slamDistance;
-	
-	
-	void Start () {
-		
+
+	// Use this for initialization
+	void Start () 
+	{
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		
+	void Update () 
+	{
 		/******Touch Stuff********/
 		if (Input.touchCount > 0) { //Detect if device has been touched
 			
@@ -52,7 +48,7 @@ public class HookShot : MonoBehaviour {
 		/******Touch Stuff********/
 		
 		
-		
+	
 		/*****Mouse Stuff********/
 		
 		
@@ -71,41 +67,47 @@ public class HookShot : MonoBehaviour {
 		
 		
 		
-		
-		if (shootHook && Vector3.Distance (hookHead.transform.position, gameObject.transform.position) <= shootingDistance) {  // Shoots the hook
+		// Shoots the hook
+		if (shootHook && Vector3.Distance (hookHead.transform.position, gameObject.transform.position) <= shootingDistance) 
+		{  
 			hookHead.transform.position += hookHead.gameObject.transform.forward * hookSpeed;
-		} else if(!enemyHooked){
+		} 
+		else if(!enemyHooked)
+		{
 			hookHead.transform.position = Vector3.MoveTowards(hookHead.transform.position,hookStartPosition.position, hookSpeed);
 			shootingDistance = 0;
-			
 		}
-		
-		if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
-			if(Input.GetTouch(0).phase == TouchPhase.Ended && enemyHooked){
+
+		if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) 
+		{
+			if(Input.GetTouch(0).phase == TouchPhase.Ended && enemyHooked)
+			{
 				Ray ray = Camera.main.ScreenPointToRay (Input.GetTouch(0).position);
 				//Debug.DrawRay (ray.origin, ray.direction * 50, Color.red);
 				RaycastHit hit;
-				if (Physics.Raycast (ray, out hit, 50)) {
-					if(hit.collider.gameObject == hookedObject){
+				if (Physics.Raycast (ray, out hit, 50)) 
+				{
+					if(hit.collider.gameObject == hookedObject)
+					{
 						throwObject = true;
 					}
 				}
 			}
 			
-			if (throwObject) {
+			if (throwObject) 
+			{
 				//get direction of throw
-				
-				if(Input.GetTouch(0).phase == TouchPhase.Ended){
-					
+				if(Input.GetTouch(0).phase == TouchPhase.Ended)
+				{
 					Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
 					Plane plane = new Plane(Vector3.up, transform.position);
 					float distance = 0;
-					if (plane.Raycast(ray, out distance)){ // if plane hit...
+					if (plane.Raycast(ray, out distance))
+					{ // if plane hit...
 						Vector3 pos = ray.GetPoint(distance); // get the point
 						// pos has the position in the plane you've touched
 					}
-					
-					
+						
 					Vector3 touchPos = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y, distance);
 					
 					throwDirection = -(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - touchPos)/(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - touchPos).magnitude;
@@ -116,51 +118,54 @@ public class HookShot : MonoBehaviour {
 					
 					RaycastHit hit;
 					
-					if(Physics.Raycast(throwRay, out hit)){
+					if(Physics.Raycast(throwRay, out hit))
+					{
 						//Debug.Log(hit.collider.name);
 						
-						if(hit.collider.tag == "Player"){
-							//Debug.Log("fuckkk yeah");
+						if(hit.collider.tag == "Player")
+						{
+							//Debug.Log("fuckkk yeah"); // lol...
 							gameObject.GetComponent<Slam>().enabled = true;
-							
 						}
-						
-						
-					} else{
+					} 
+					else
+					{
 						Vector3 relativePoint = gameObject.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position));
-						
-						
-						
-						if(relativePoint.x > 0){
+
+						if(relativePoint.x > 0)
+						{
 							gameObject.GetComponent<Swing>().swingRight();
 						}
-						else if(relativePoint.x < 0){
+						else if(relativePoint.x < 0)
+						{
 							gameObject.GetComponent<Swing>().swingLeft();
 						}
 						gameObject.GetComponent<Swing>().enabled = true;
-						
 					}
 				}
-				
-				
 			}
 			
-		} else {
-			if (Input.GetKey (KeyCode.Mouse0) && enemyHooked) {
+		} 
+		else 
+		{
+			if (Input.GetKey (KeyCode.Mouse0) && enemyHooked) 
+			{
 				Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 				//Debug.DrawRay (ray.origin, ray.direction * 50, Color.red);
 				RaycastHit hit;
-				if (Physics.Raycast (ray, out hit, 50)) {
-					if(hit.collider.gameObject == hookedObject){
+				if (Physics.Raycast (ray, out hit, 50)) 
+				{
+					if(hit.collider.gameObject == hookedObject)
+					{
 						throwObject = true;
 					}
 				}
 				
 			}
 			
-			if (throwObject) {
+			if (throwObject) 
+			{
 				//get direction of throw
-				
 				if(Input.GetKeyUp(KeyCode.Mouse0)){
 					throwDirection = -(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition)/(Camera.main.WorldToScreenPoint(hookedObject.transform.position) - Input.mousePosition).magnitude;
 					Ray throwRay = new Ray(hookedObject.transform.position, new Vector3(throwDirection.x, 0 , throwDirection.y));
@@ -169,55 +174,51 @@ public class HookShot : MonoBehaviour {
 					
 					RaycastHit hit;
 					
-					if(Physics.Raycast(throwRay, out hit)){
+					if(Physics.Raycast(throwRay, out hit))
+					{
 						//Debug.Log(hit.collider.name);
 						
-						if(hit.collider.tag == "Player"){
+						if(hit.collider.tag == "Player")
+						{
 							//Debug.Log("fuckkk yeah");
 							gameObject.GetComponent<Slam>().enabled = true;
-							
 						}
-						
-						
-					} else{
+					} 
+					else
+					{
 						Vector3 relativePoint = gameObject.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-						
-						
-						
-						if(relativePoint.x > 0){
+
+						if(relativePoint.x > 0)
+						{
 							gameObject.GetComponent<Swing>().swingRight();
 						}
-						else if(relativePoint.x < 0){
+						else if(relativePoint.x < 0)
+						{
 							gameObject.GetComponent<Swing>().swingLeft();
 						}
 						gameObject.GetComponent<Swing>().enabled = true;
-						
 					}
 				}
-				
-				
 			}
-			
 		}
-		
-		
-		
-		
-		
+
 		//Updates the direction of the marker
-		
+	
 	}
 	
-	void getDirection(){
+	void getDirection()
+	{
 		direction = (initialMousePosition - lastMousePosition)/(initialMousePosition - lastMousePosition).magnitude;
 	}
 	
-	void OnMouseDown(){
+	void OnMouseDown()
+	{
 		initialMousePosition = Input.mousePosition;
 		mouseClicked = true;
 	}
 	
-	public void HookEnemy(GameObject objectHooked){
+	public void HookEnemy(GameObject objectHooked)
+	{
 		enemyHooked = true;
 		hookedObject = objectHooked;
 	}
