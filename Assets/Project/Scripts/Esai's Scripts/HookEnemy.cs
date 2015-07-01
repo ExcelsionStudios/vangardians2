@@ -18,6 +18,10 @@ public class HookEnemy : MonoBehaviour
 			// Set the collided Enemy's parent as this object's transform.
 			col.gameObject.transform.parent = gameObject.transform;
 			col.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+
+			// We don't want the Enemy to still be able to move: He's stuck by the hook!
+			col.gameObject.GetComponent<MoveTo>().enabled = false;
+
 			GameObject myHalo = (GameObject)Instantiate(haloPrefab, col.gameObject.transform.position, haloPrefab.transform.rotation);
 			myHalo.transform.parent = col.gameObject.transform;
 			hookShot.HookEnemy(col.gameObject);
