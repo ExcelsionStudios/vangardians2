@@ -43,6 +43,7 @@ public class HookEnemy : MonoBehaviour
 			
 			foreach (Transform child in col.gameObject.transform) 
 			{
+				if(child.name == "HookIndicator(Clone)")
 				Destroy(child.gameObject);
 			}
 		}
