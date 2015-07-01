@@ -40,12 +40,9 @@ public class HookEnemy : MonoBehaviour
 
 			hookShot.hookedObject.GetComponent<Rigidbody>().isKinematic = false;	// Matt: This line gives NullReferenceException. Seems to be when a Hooked Enemy touches another enemy.
 			//hookShot.hookedObject = null;
+
+			Destroy(col.gameObject.transform.Find("HookIndicator(Clone)").gameObject);
 			
-			foreach (Transform child in col.gameObject.transform) 
-			{
-				if(child.name == "HookIndicator(Clone)")
-				Destroy(child.gameObject);
-			}
 		}
 	}
 }
