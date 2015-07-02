@@ -21,6 +21,7 @@ public class HookShot : MonoBehaviour
 	Vector2 throwDirection;
 	bool slam = false;
 	float slamDistance;
+	public LayerMask ignoreRaycastLayer;
 
 	// Use this for initialization
 	void Start () 
@@ -174,7 +175,7 @@ public class HookShot : MonoBehaviour
 					
 					RaycastHit hit;
 					
-					if(Physics.Raycast(throwRay, out hit))
+					if(Physics.Raycast(throwRay, out hit, ignoreRaycastLayer))
 					{
 						//Debug.Log(hit.collider.name);
 						
