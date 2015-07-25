@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using Enemies;
+using Enemies.Modules;
 
 //Stephan Ennen - 6/24/15
 
@@ -11,7 +13,15 @@ public class SimpleHook : MonoBehaviour
 {
 	public SimpleHookHead head;
 	public LineRenderer chain; 		//This is also what we draw our chain from.
-	public Transform connection; 	//This is what we draw our chain to.
+	private Transform c;
+	public Transform connection { //This is what we draw our chain to.
+		get{ return c; }
+		set{
+			if( hookedEnemy != null )
+				hookedEnemy.isHooked = false;
+			c = value;
+		}
+	}
 	public Transform cannon; 		//Our cannon head. We rotate this.
 	public Transform swipeDetector; //Helps detect swipes.
 
@@ -26,6 +36,7 @@ public class SimpleHook : MonoBehaviour
 	public Vector2[] path = new Vector2[0]; 
 	public bool[] wallTouches = new bool[0];
 	float totalAngle = 0f;
+	public Enemies.Enemy hookedEnemy;
 
 	void Start () 
 	{
@@ -47,7 +58,7 @@ public class SimpleHook : MonoBehaviour
 		{
 			Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(smoothedDragPos) );
 			TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
-			Debug.Log( smoothedVel.magnitude );
+			//Debug.Log( smoothedVel.magnitude );
 		}
 
 		//swipeDetector
@@ -273,8 +284,15 @@ public class SimpleHook : MonoBehaviour
 	{
 		//When our head object hits a collider.
 		connection = t;
-
-		//TODO we may want to set enemy control to false here.
+		if( connection != null )
+		{
+			//Look for enemy script and tell it the situation.
+			if( connection.GetComponent<Enemies.Enemy>() != null )
+			{
+				hookedEnemy = connection.GetComponent<Enemies.Enemy>();
+				hookedEnemy.isHooked = true;
+			}
+		}
 
 		head.gameObject.SetActive(false);
 	}
@@ -291,13 +309,34 @@ public class SimpleHook : MonoBehaviour
 	////////////////// UTILITY FUNCTIONS /////////////
 
 	//This function assumes a lot of things about the enemy gameobject, at least until we know what our enemies will look like.
-	public static void SetEnemyControl( GameObject enemy, bool state ) //True gives control, false removes it.
+	public static void SetEnemyControl( GameObject obj, bool state ) //True gives control, false removes it.
 	{
+		Enemies.Enemy enemy = obj.GetComponent<Enemies.Enemy>();
+
+		//if( enemy.HookComponent != null )
+		//	enemy.HookComponent.Attach( !state );
+
+		obj.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
+
+		if( state )
+		{
+			obj.transform.parent = null;
+		}
+
+		/*
+		obj.GetComponent<Rigidbody2D>().isKinematic = !state;
+
+
+		else
+		{
+			//enemy.isI
+		}
+		/* Old method of doing this:
 		enemy.GetComponent<Rigidbody2D>().isKinematic = !state;
 		enemy.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
 
 		if( state == true ) 
-			enemy.transform.parent = null;
+			enemy.transform.parent = null; */
 	}
 
 

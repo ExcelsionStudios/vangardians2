@@ -104,10 +104,12 @@ public class SimpleHookHead : MonoBehaviour
 	}
 	private void PassControl() //Pass control to our owner.
 	{
+
 		if( hit != null )
 		{
 			SimpleHook.SetEnemyControl(hit.gameObject, true); //Give the enemy control back. (SimpleHook will immediately take control)
 		}
+
 
 		//Reset our values.
 		speed = 0f;
