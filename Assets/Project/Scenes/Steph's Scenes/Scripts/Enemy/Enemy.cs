@@ -13,32 +13,40 @@ namespace Enemies //DON'T extend this class. No need to.
 	{
 		public static Transform container;
 
-		#region Situational Values
-		[SerializeField] private bool hooked; //
-		public bool isHooked { 
-			get { return hooked; } 
-			set 
-			{
-				gameObject.GetComponent<Rigidbody2D>().isKinematic = value;
-				gameObject.layer = !value ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
+		[SerializeField] private Situation situation;
+		public Situation Status
+		{
+			get{ return situation; }
+			set{
+				Rigidbody2D rb2D = GetComponent<Rigidbody2D>();
+
+				switch( value )
+				{
+				case Situation.InControl:
+					this.gameObject.layer = LayerMask.NameToLayer("Enemy");
+					rb2D.isKinematic = false;
+					break;
+				case Situation.BeingPushedByHook:
+					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
+					rb2D.isKinematic = true;
+					break;
+				case Situation.Hooked:
+					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
+					rb2D.isKinematic = true;
+					break;
+				case Situation.BeingSlammed:
+					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
+					rb2D.isKinematic = true;
+					break;
+				}
 
 				if( HookComponent != null )
 					HookComponent.NotifyStatus( value );
-
-				hooked = value;
+				situation = value;
 			}
 		}
-
-		[SerializeField] private bool slam; //
-		public bool inSlam { 
-			get { return slam; }
-			internal set {
-				if( GroundComponent != null )
-					GroundComponent.Active = !value;
-				slam = value;
-			}
-		}
-
+		#region Situational Values
+		/*
 		[SerializeField] private bool fallen; //TODO make modular
 		public bool hasFallen { 
 			get { return fallen; }
@@ -46,7 +54,7 @@ namespace Enemies //DON'T extend this class. No need to.
 				//Disable all the things...
 				fallen = value;
 			}
-		}
+		} */
 
 		[SerializeField] private bool immobile;
 		public bool isImmobile {
@@ -98,7 +106,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		public DeathBehaviour DeathComponent  { get; internal set; }
 		public HookBehaviour  HookComponent   { get; internal set; }
 		public SlamBehaviour  SlamComponent   { get; internal set; }
-
+		public MoveBehaviour  MoveComponent   { get; internal set; }
 		void Awake()
 		{
 			if( container == null )
@@ -107,6 +115,7 @@ namespace Enemies //DON'T extend this class. No need to.
 				container.position = Vector3.zero;
 			}
 			this.transform.parent = container;
+			situation = Situation.InControl;
 			Health = my_maxHp;
 			#region INITALIZE COMPONENTS
 			//TODO - Throw an error and quit if there's a required component missing... Also possibly make a loop so we get all modules
@@ -155,7 +164,15 @@ namespace Enemies //DON'T extend this class. No need to.
 				SlamComponent = module as SlamBehaviour;
 				modules = ArrayTools.Push<ModuleBase>(modules, module);
 			}
-			#endregion INITALIZE COMPONENTS
+
+			//Move
+			module = GetComponent<MoveBehaviour>();
+			if( module != null )
+			{
+				MoveComponent = module as MoveBehaviour;
+				modules = ArrayTools.Push<ModuleBase>(modules, module);
+			}
+			#endregion
 		}
 
 		void Start()
@@ -164,9 +181,8 @@ namespace Enemies //DON'T extend this class. No need to.
 		}
 
 
-		//private bool _lastShouldNotMove;
-		internal bool shouldNotMove //Are we in a situation where our movement isnt allowed? Use isImmobile, not this.
-		{ get { return isHooked || inSlam || hasFallen; } }
+
+
 
 		void Update()
 		{
@@ -179,23 +195,25 @@ namespace Enemies //DON'T extend this class. No need to.
 			}
 		}
 
-		public float exitTime = 0f;
+		internal bool shouldNotMove //Are we in a situation where our movement isnt allowed? Use isImmobile, not this.
+		{ get { return Status == Situation.BeingPushedByHook || Status == Situation.Hooked || Status == Situation.BeingSlammed; } }
+		public float stunTimer = 0f;
 		private IEnumerator RestoreTimer() //TODO stop this timer if shouldNotMove changes to true ever.
 		{
 			if( shouldNotMove )
-				exitTime = 2.5f;
+				stunTimer = 2.5f;
 
-			while( exitTime > 0.0f )
+			while( stunTimer > 0.0f )
 			{
 				isImmobile = true;
 				while( shouldNotMove )
 				{
-					exitTime = 2.5f;
+					stunTimer = 2.5f;
 					yield return null;
 				}
 
 
-				exitTime -= Time.deltaTime;
+				stunTimer -= Time.deltaTime;
 				yield return null;
 			}
 
@@ -203,9 +221,6 @@ namespace Enemies //DON'T extend this class. No need to.
 			yield return null;
 			StartCoroutine( "RestoreTimer" );
 		}
-
-
-
 
 
 

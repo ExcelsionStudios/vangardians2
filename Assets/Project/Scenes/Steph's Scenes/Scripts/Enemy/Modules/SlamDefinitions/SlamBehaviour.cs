@@ -13,7 +13,7 @@ namespace Enemies.Modules
 		// Called as soon as the input identifies a slam. Maybe play sounds or a particle effect?
 		public virtual void OnSlamStart()
 		{
-			owner.inSlam = true;
+			owner.Status = Situation.BeingSlammed;
 			if( owner.GroundComponent != null )
 				owner.GroundComponent.Active = false;
 		}
@@ -27,7 +27,7 @@ namespace Enemies.Modules
 		// Called at the very end of a slam. Do things like apply damage in an AOE or create particle effects, exc. (This is the primary use)
 		public virtual void OnSlamEnd()
 		{
-			owner.inSlam = false;
+			owner.Status = Situation.InControl;
 
 			if( owner.GroundComponent != null )
 				owner.GroundComponent.Active = true;

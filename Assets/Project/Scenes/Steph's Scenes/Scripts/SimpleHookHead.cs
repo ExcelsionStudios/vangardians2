@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Enemies;
 
-//Stephan Ennen - 6/24/15
+//Stephan Ennen - 7/27/15
 
 //NOTE: This script works very closely with SimpleHook.cs 
 //      Not meant to be used standalone!
@@ -15,6 +16,10 @@ public class SimpleHookHead : MonoBehaviour
 	public float speed;
 	public Vector3 direction;
 	public Transform hit;
+	public AnimationCurve extendingMultiplier;
+	public float extendingScale = 1.6f;
+	public AnimationCurve retractingPattern;
+	public float patternScale = 1.6f;
 	
 	private Vector3 extent = Vector3.zero;
 	private float Distance {
@@ -37,7 +42,7 @@ public class SimpleHookHead : MonoBehaviour
 		//We assume SimpleHook moved us so that this calculation will give correct values.
 		direction = VectorExtras.Direction(owner.transform.position, transform.position);
 		extent = VectorExtras.OffsetPosInDirection( transform.position, direction, distance );
-		StartCoroutine( Extend() );
+		StartCoroutine( Extend(distance) );
 	}
 
 	void OnTriggerEnter2D( Collider2D col ) //This apparently will run even if our gameobject is disabled! (Says on wiki)
@@ -48,19 +53,17 @@ public class SimpleHookHead : MonoBehaviour
 			Debug.Log("Hookhead hit: " + col.transform.name );
 			hit = col.transform;
 
-			SimpleHook.SetEnemyControl(col.gameObject, false); //Take control away from the enemy. YOU'RE MINE NOW! >:D
-			col.gameObject.layer = LayerMask.NameToLayer("Enemy");
+			//Take control away from the enemy. YOU'RE MINE NOW! >:D
+			Enemies.Enemy enemy = col.gameObject.GetComponent<Enemies.Enemy>();
+			enemy.Status = Enemies.Situation.BeingPushedByHook;
+
+			//col.gameObject.layer = LayerMask.NameToLayer("Enemy");
 
 			hit.parent = this.transform;
 		}
 	}
 
-	void Update () 
-	{
-		//Debug.Log( Distance );
-	}
-
-	IEnumerator Extend()
+	IEnumerator Extend( float distance )
 	{
 		Debug.Log("HOOK: Extending...", this);
 		StopCoroutine( Retract() );
@@ -69,13 +72,13 @@ public class SimpleHookHead : MonoBehaviour
 		//As long as our distance has not reached max...
 		while( Distance < maxDistance )
 		{
-			transform.position = Vector3.MoveTowards(transform.position, extent, speed * Time.deltaTime);
+			transform.position = Vector3.MoveTowards(transform.position, extent, speed * extendingMultiplier.Evaluate(Distance * extendingScale) * Time.deltaTime);
 			yield return new WaitForEndOfFrame(); //TODO change all to: yield return null;
 		}
 
 		//At this point, we are fully extended..
 
-		//Do we have an enemy attached?
+		//Do we have an enemy attached? (OnTriggerEnter2D will change hit)
 		if( hit == null )
 		{
 			//No. Start retracting.
@@ -90,34 +93,43 @@ public class SimpleHookHead : MonoBehaviour
 	IEnumerator Retract()
 	{
 		Debug.Log("HOOK: Retracting...", this);
-		StopCoroutine( Extend() );
+		StopCoroutine( Extend(0f) );
 		gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
-		
-		while( Distance > 0.65f ) //NOTE that distance is measured from owner.transform.position and NOT from owner.cannon.position (Which is closer)
+
+		while( Distance > 0.65f ) //NOTE that Distance is measured from owner.transform.position and NOT from owner.cannon.position (Which is closer)
 		{
-			//VectorExtras.Direction(transform.position,owner.transform.position) * owner.hookSpeed * Time.deltaTime
-			transform.position = Vector3.MoveTowards(transform.position, owner.cannon.position, owner.hookSpeed * Time.deltaTime);
+			//The below line loops the AnimationCurve infinitely. 'patternScale' changes how often it repeats.
+			float pattern = retractingPattern.Evaluate(Mathf.Repeat(Distance * patternScale, 1.0f));
+
+			//transform.position = Vector3.MoveTowards(transform.position, owner.cannon.position, owner.hookSpeed * retractingPattern.Evaluate(progress) * Time.deltaTime);
+			transform.position = Vector3.MoveTowards(transform.position, owner.cannon.position, owner.hookSpeed * pattern * Time.deltaTime);
 			yield return new WaitForEndOfFrame();
 		}
 
 		PassControl();
 	}
+
+	//Used for situations where the head should reel back in, when it otherwise wouldn't.
+	public void ForceRetractFrom( Vector3 position )
+	{
+		gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
+		StopCoroutine( Extend(0f) );
+		StopCoroutine( Retract() );
+		transform.position = position;
+
+		StartCoroutine( Retract() );
+	}
 	private void PassControl() //Pass control to our owner.
 	{
-
-		if( hit != null )
-		{
-			SimpleHook.SetEnemyControl(hit.gameObject, true); //Give the enemy control back. (SimpleHook will immediately take control)
-		}
-
-
+		Debug.Log ("Passed control to owner.");
+		
 		//Reset our values.
 		speed = 0f;
 		maxDistance = 0f;
 		extent = Vector3.zero;
 		direction = Vector3.zero;
 
-		owner.OnHeadHit( hit );
+		owner.OnHeadHit( hit ); //This function will also change the enemy's status appropriately.
 		hit = null;
 	}
 

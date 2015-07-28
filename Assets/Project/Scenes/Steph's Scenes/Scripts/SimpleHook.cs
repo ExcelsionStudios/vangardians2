@@ -4,7 +4,7 @@ using System.Collections;
 using Enemies;
 using Enemies.Modules;
 
-//Stephan Ennen - 6/24/15
+//Stephan Ennen - 7/27/15
 
 //NOTE: This script works very closely with SimpleHookHead.cs 
 //      Not meant to be used standalone!
@@ -13,16 +13,17 @@ public class SimpleHook : MonoBehaviour
 {
 	public SimpleHookHead head;
 	public LineRenderer chain; 		//This is also what we draw our chain from.
-	private Transform c;
+	private Transform c; //Storage for the below accessor. (only use the below and ignore this)
 	public Transform connection { //This is what we draw our chain to.
 		get{ return c; }
 		set{
 			if( hookedEnemy != null )
-				hookedEnemy.isHooked = false;
+				hookedEnemy.Status = Situation.InControl; //hookedEnemy.isHooked = false;
 			c = value;
 		}
 	}
 	public Transform cannon; 		//Our cannon head. We rotate this.
+	public Transform trajectoryVisual; 
 	public Transform swipeDetector; //Helps detect swipes.
 
 	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
@@ -42,6 +43,8 @@ public class SimpleHook : MonoBehaviour
 	{
 		if (head != null)
 			head.gameObject.SetActive(false);
+		if (trajectoryVisual != null)
+			trajectoryVisual.gameObject.SetActive(false);
 	}
 
 	public float dragSmoothing;
@@ -100,15 +103,22 @@ public class SimpleHook : MonoBehaviour
 			}
 			else
 			{
-				
+				Vector2 mPos = VectorExtras.GetMouseWorldPos();
+
 				if (Input.GetMouseButton(0)) // Player is aiming
 				{
-					Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos() );
+					Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), mPos );
 					TransformExtensions.SetRotation2D( cannon, VectorExtras.VectorToDegrees(direction) );
+
+					//Draw the trajectory indicator
+					trajectoryVisual.gameObject.SetActive( true );
+					Vector2 target = direction * Vector3.Distance(transform.position, new Vector3( mPos.x, mPos.y, 0f ));
+					trajectoryVisual.position = new Vector3( target.x, target.y, -0.001f );
+
 				}
 				else if (Input.GetMouseButtonUp(0)) // Player let go.
 				{
-					Vector2 mPos = VectorExtras.GetMouseWorldPos();
+					trajectoryVisual.gameObject.SetActive( false );
 					
 					// Matt: Added this -- was getting errors when messing around. TODO: Ensure valid head since this will ruin further calculations.
 					if (head != null)
@@ -136,7 +146,7 @@ public class SimpleHook : MonoBehaviour
 			}
 			else
 			{
-				//The head is not present. We must have an enemy.
+				//The head is not present. We must have an enemy. TODO: we can directly check this now. Look for Enemy component on object.
 				if (startDragPos == Vector2.zero)
 				{
 					if (Input.GetMouseButtonDown(0))
@@ -234,8 +244,9 @@ public class SimpleHook : MonoBehaviour
 			}
 		}
 	}
+	
 
-	private bool inSlam = false;
+	private bool inSlam = false; //DONT use enum for this. We use this for this script, not our enemy.
 	IEnumerator Slam() //Animate our slam, then do damage to enemies in radius.
 	{
 		//SlamEvent is any custom behaviours the enemy has defined. (Such as taking damage, or exploding..)
@@ -249,13 +260,15 @@ public class SimpleHook : MonoBehaviour
 		inSlam = true;
 		connection.parent = cannon;
 
-		SetEnemyControl(connection.gameObject, false);
+		slamEvent.owner.Status = Situation.BeingSlammed;
 
 		float t = 0f;
 		while( t < 180f )
 		{
+
 			//TODO make this not able to overshoot, add Time.deltaTime multiplier
 			t += slamVelocity;
+			t = Mathf.Clamp(t, 0f, 180.0f);
 			float progress = t / 180.0f;
 
 			cannon.RotateAround( cannon.position, cannon.up, slamVelocity );
@@ -268,16 +281,30 @@ public class SimpleHook : MonoBehaviour
 			yield return null;
 		}
 
-		//Exit
+		//Exit Slam - Return control to the enemy.
+
+
 		Debug.LogWarning("Slam Done!", this);
-		SetEnemyControl(connection.gameObject, true);
+
+
+		slamEvent.owner.Status = Situation.InControl;
+		connection.parent = null;
 		connection.localScale = Vector3.one;
+		connection.rotation = Quaternion.identity; //TODO - find a better solution. This is here because enemies get "embedded" into the ground.
 
 		if( slamEvent != null )
 			slamEvent.OnSlamEnd();
 
-		connection = null;
 		inSlam = false;
+
+		ForceHeadRetract( connection.position ); //This also clears our connection variable. :)
+	}
+
+	public void ForceHeadRetract( Vector3 position )
+	{
+		head.gameObject.SetActive( true );
+		connection = head.transform;
+		head.ForceRetractFrom( position );
 	}
 
 	public void OnHeadHit( Transform t )
@@ -290,10 +317,10 @@ public class SimpleHook : MonoBehaviour
 			if( connection.GetComponent<Enemies.Enemy>() != null )
 			{
 				hookedEnemy = connection.GetComponent<Enemies.Enemy>();
-				hookedEnemy.isHooked = true;
+				hookedEnemy.Status = Situation.Hooked;
 			}
+			connection.parent = null;
 		}
-
 		head.gameObject.SetActive(false);
 	}
 
@@ -308,20 +335,22 @@ public class SimpleHook : MonoBehaviour
 
 	////////////////// UTILITY FUNCTIONS /////////////
 
-	//This function assumes a lot of things about the enemy gameobject, at least until we know what our enemies will look like.
-	public static void SetEnemyControl( GameObject obj, bool state ) //True gives control, false removes it.
+	//Notify the enemy of its situation.
+	/*public static void SetEnemyControl( GameObject obj, bool state ) //True gives control, false removes it.
 	{
 		Enemies.Enemy enemy = obj.GetComponent<Enemies.Enemy>();
-
-		//if( enemy.HookComponent != null )
-		//	enemy.HookComponent.Attach( !state );
-
-		obj.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
 
 		if( state )
 		{
 			obj.transform.parent = null;
 		}
+
+		//if( enemy.HookComponent != null )
+		//	enemy.HookComponent.Attach( !state );
+		/*
+		obj.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
+
+
 
 		/*
 		obj.GetComponent<Rigidbody2D>().isKinematic = !state;
@@ -337,7 +366,7 @@ public class SimpleHook : MonoBehaviour
 
 		if( state == true ) 
 			enemy.transform.parent = null; */
-	}
+	//}
 
 
 

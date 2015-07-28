@@ -11,11 +11,12 @@ namespace Enemies.Modules
 	public class MoveToIdol : MoveBehaviour
 	{
 		public float force;
-		public Transform idol;
+		private Transform idol;
 		private Rigidbody2D rb2D;
 		void Start()
 		{
 			rb2D = GetComponent<Rigidbody2D>();
+			idol = Idol.Get().transform;
 		}
 
 		internal override void FixedMoveUpdate()

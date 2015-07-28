@@ -53,10 +53,14 @@ namespace Enemies.Modules
 				//1 damage to surrounding enemies.
 				Enemy e = targets[i].transform.GetComponent<Enemy>();
 				if( e != null )
+				{
 					e.Health -= 1;
+					e.stunTimer += 0.5f; //Stun the enemy for half a second.
+				}
 			}
 			//3 damage to the enemy that was slammed. (We do this last otherwise this script might be deleted due to death.)
 			owner.Health -= 3;
+			owner.stunTimer += 0.5f; //Stun the enemy.
 		}
 	}
 }

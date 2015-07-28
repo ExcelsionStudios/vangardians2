@@ -9,6 +9,23 @@ namespace Enemies.Modules
 {
 	public class HookBehaviour : ModuleBase
 	{
+		
+		//When the hook head first makes contact with us.
+		internal virtual void OnHookPushStart()
+		{
+			Debug.Log("Hook first contact!");
+		}
+		
+		//Every frame that the inital hook fire pushes us, this is called.
+		internal virtual void OnHookPushing()
+		{
+			return;
+		}
+		//When the hookhead passes control over to the regular hooked-enemy logic, this is called.
+		internal virtual void OnHookPushEnd()
+		{
+			Debug.Log("Hook finished making contact! OnHookStart will be called next.");
+		}
 
 
 		//The hook just attached to us.
@@ -27,30 +44,33 @@ namespace Enemies.Modules
 			Debug.Log("Hook Dettached!");
 		}
 
-		//Called from the player's hook script. DONT override.
-		public void NotifyStatus( bool state )
-		{
-			//gameObject.GetComponent<Rigidbody2D>().isKinematic = state;
-			//gameObject.layer = state ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("IgnorePhysics");
 
-			if( state == true && owner.isHooked != true )
+		private Situation lastStatus;
+		//Called from the player's hook script. DONT override. Also note that this isnt called every frame.
+		public void NotifyStatus( Situation status ) //TODO make this include the inital hook contact state.
+		{
+			if( lastStatus != status )
 			{
-				OnHookStart();
+				if( lastStatus == Situation.InControl && status == Situation.BeingPushedByHook )
+					OnHookPushStart();
+				else if( lastStatus == Situation.BeingPushedByHook && status == Situation.Hooked ) 
+				{
+					OnHookPushEnd();
+					OnHookStart();
+				}
+				else if( lastStatus == Situation.Hooked ) //The new status is something we don't care about.
+					OnHookEnd();
 			}
-			else if( state == false && owner.isHooked != false )
-			{
-				OnHookEnd();
-			}
-			//owner.isHooked = state;
+			lastStatus = status;
 		}
 
 
 		protected override void Update()
 		{
-			if( owner.isHooked == true )
-			{
+			if( owner.Status == Situation.Hooked )
 				OnHookUpdate();
-			}
+			else if( owner.Status == Situation.BeingPushedByHook )
+				OnHookPushing();
 		}
 
 

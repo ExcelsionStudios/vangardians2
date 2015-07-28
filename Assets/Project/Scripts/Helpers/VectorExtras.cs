@@ -275,7 +275,7 @@ public class VectorExtras : System.Object
 	public static Vector2 GetMouseWorldPos()
 	{
 		RaycastHit data;
-		if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out data, Mathf.Infinity )) 
+		if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out data, Mathf.Infinity, Physics.IgnoreRaycastLayer )) 
 		{
 			return new Vector2( data.point.x, data.point.y );
 		}
