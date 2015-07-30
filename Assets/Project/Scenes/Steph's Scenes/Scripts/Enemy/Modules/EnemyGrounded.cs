@@ -29,7 +29,7 @@ namespace Enemies.Modules
 			if( owner.Status == Situation.Hooked ) //Tell our hook to retract.
 			{
 				GameObject obj = GameObject.Find("Player") as GameObject; //TODO Find methods are VERY slow. Use an alternate route.
-				SimpleHook hook = obj.GetComponent<SimpleHook>();
+				PlayerHook hook = obj.GetComponent<PlayerHook>();
 				hook.ForceHeadRetract( transform.position );
 			}
 

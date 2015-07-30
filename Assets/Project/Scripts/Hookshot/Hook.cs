@@ -171,7 +171,7 @@ public class Hook : MonoBehaviour
 									// Add exit function here, then return.
 									Debug.Log( "Direction variance was too large! (This is a swing)" );
 									//TODO make swipeDir snap to exactly tangental.
-									connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed * (totalAngle / 36f));
+									connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed); // * (totalAngle / 36f)
 									//DONT let go of the enemy yet. (Maybe if its dead?)
 
 									break;
@@ -188,7 +188,7 @@ public class Hook : MonoBehaviour
 						{
 							//Apply swing forces.
 
-							connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed * (totalAngle / 36f));
+							connection.GetComponent<Rigidbody2D>().AddForce(swipeDir * tanSpeed); // * (totalAngle / 36f)
 						}
 
 						startDragPos = Vector2.zero;

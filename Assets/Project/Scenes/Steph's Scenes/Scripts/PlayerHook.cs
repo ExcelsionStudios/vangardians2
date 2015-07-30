@@ -4,14 +4,14 @@ using System.Collections;
 using Enemies;
 using Enemies.Modules;
 
-//Stephan Ennen - 7/27/15
+//Stephan Ennen - 7/30/15
 
-//NOTE: This script works very closely with SimpleHookHead.cs 
+//NOTE: This script works very closely with PlayerHookHead.cs 
 //      Not meant to be used standalone!
 
-public class SimpleHook : MonoBehaviour 
+public class PlayerHook : MonoBehaviour 
 {
-	public SimpleHookHead head;
+	public PlayerHookHead head;
 	public LineRenderer chain; 		//This is also what we draw our chain from.
 	private Transform c; //Storage for the below accessor. (only use the below and ignore this)
 	public Transform connection { //This is what we draw our chain to.
@@ -25,19 +25,19 @@ public class SimpleHook : MonoBehaviour
 	public Transform cannon; 		//Our cannon head. We rotate this.
 	public Transform trajectoryVisual; 
 	public Transform swipeDetector; //Helps detect swipes.
-	public Transform swingDetector; //Helps detect if we're swinging or slamming.
+	private CircleCollider2D detect_slam;
+	private BoxCollider2D detect_clockwise;
+	private BoxCollider2D detect_anticlockwise;
 
 	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
 	public float maxHookDistance = 4f;  //Max distance our hook will travel.
+	public float swingForce = 10.0f;    //How powerful each swing is.
 	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
 	public float slamSensitivity = 90.0f; //If our delta angle is larger than this while dragging, it triggers a slam.
 
 	public AnimationCurve enemyScaling; //Scale multiplier of enemy as they are tossed.
 
 	private Vector2 startDragPos = Vector2.zero;
-	public Vector2[] path = new Vector2[0]; 
-	public bool[] wallTouches = new bool[0];
-	float totalAngle = 0f;
 	public Enemies.Enemy hookedEnemy;
 
 	void Start () 
@@ -46,6 +46,10 @@ public class SimpleHook : MonoBehaviour
 			head.gameObject.SetActive(false);
 		if (trajectoryVisual != null)
 			trajectoryVisual.gameObject.SetActive(false);
+
+		detect_clockwise = swipeDetector.FindChild("Swipe_Clockwise").GetComponent<BoxCollider2D>();
+		detect_anticlockwise = swipeDetector.FindChild("Swipe_Anti-Clockwise").GetComponent<BoxCollider2D>();
+		detect_slam = swipeDetector.FindChild("Swipe_Slam").GetComponent<CircleCollider2D>();
 	}
 
 	public float dragSmoothing;
@@ -59,45 +63,18 @@ public class SimpleHook : MonoBehaviour
 
 		Gizmos.color = Color.cyan;
 		Gizmos.DrawSphere( smoothedDragPos, 0.15f );
-
-		//Draw valid touch area.
-		//Gizmos.color = Color.white;
-		//Gizmos.DrawWireSphere( 
-
-		/*
-		Gizmos.color = Color.green;
-		if( path != null && path.Length > 0 )
-		{
-			for( int i = 0; i < path.Length; i-- )
-			{
-				Debug.LogError("I: "+ i +", length: "+ (path.Length-1));
-				Vector3 start;
-				Vector3 end;
-				if( i == path.Length - 1 )
-					start = new Vector3(VectorExtras.GetMouseWorldPos().x, VectorExtras.GetMouseWorldPos().y);
-				else
-					start = new Vector3(path[i+1].x, path[i+1].y);
-				end = new Vector3(path[i].x, path[i].y);
-				Gizmos.DrawLine( start, end );
-			}
-		} */
 	}
 
 	void Update() 
 	{
-
-		//Vector2 pushedPos = VectorExtras.OffsetPosInPointDirection( VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos(), 3f );
-		//Vector2 pushedPos = VectorExtras.MinAnchoredMovePosTowardTarget(VectorExtras.V2FromV3(transform.position), VectorExtras.GetMouseWorldPos(), 3f, 3f );
+		/*
 		smoothedDragPos = Vector3.SmoothDamp(smoothedDragPos, VectorExtras.V3FromV2(VectorExtras.GetMouseWorldPos(),0f), ref smoothedVel, dragSmoothing, 9999f);
 		if( startDragPos != Vector2.zero )
 		{
 			Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(smoothedDragPos) );
 			TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
 			//Debug.Log( smoothedVel.magnitude );
-		}
-
-		//swipeDetector
-
+		} */
 
 		if( inSlam == false )
 			ReadInput();
@@ -169,7 +146,6 @@ public class SimpleHook : MonoBehaviour
 		else // Either an enemy is attached or a head is.
 		{
 			// Always look at our connection.
-			// Vector2 direction = -VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position) );
 			TransformExtensions.SetRotation2D(cannon, VectorExtras.VectorToDegrees(VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(connection.position))));
 			
 			if (head.isActiveAndEnabled == true)
@@ -189,12 +165,10 @@ public class SimpleHook : MonoBehaviour
 						{
 							startDragPos = mPos;
 
-							path = new Vector2[0];
-							path = ArrayTools.PushLast<Vector2>(path, mPos);
-							wallTouches = new bool[0];
-							wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
+							swipeDetector.position = connection.position; //Set our triggers to the enemy location, and make it face toward the tower.
+							Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(connection.position), VectorExtras.V2FromV3(transform.position) );
+							TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
 
-							totalAngle = 0f;
 						}
 					}
 				}
@@ -203,78 +177,34 @@ public class SimpleHook : MonoBehaviour
 					Vector2 mPos = VectorExtras.GetMouseWorldPos();
 					if( Input.GetMouseButton(0) ) //Player is holding..
 					{
-						//http://gamedevelopment.tutsplus.com/tutorials/how-to-detect-when-an-object-has-been-circled-by-a-gesture--gamedev-336
-
-						//Keeping this in case we want to be able to "throw" an enemy in a circle later.
-						Vector2 lastPos = path[path.Length-1];
-						path = ArrayTools.PushLast<Vector2>(path, mPos); //TODO this array will get quite large for extended touches!
-						wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
-						
-						//We calculate the angle from last frame's position to this frame's position, then add it to totalAngle.
-						Vector2 prev = VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), lastPos); //This will cause problems if the player moves!
-						Vector2 curr = VectorExtras.Direction(VectorExtras.V2FromV3(transform.position), mPos);
-						float deltaAng = Vector2.Angle( prev, curr );
-						totalAngle += deltaAng;
-
-
-						//Look to see if our detlta angle was of a certian size. 
-						//If large enough, we can assume that the path was a slam. Forcefully end the touch logic if this is the case.
-						//TODO This detection is vulnerable to lag!!!! (Add some sort of time.deltatime)
-						//TODO make this detection more accurate.
-
-						bool noTouchy = false;
-						for( int i = Mathf.Max((path.Length - 5), 0); i < path.Length; i++ ) //Search back up to 4 frames.
+						if( detect_clockwise.OverlapPoint( mPos ) == true )
 						{
-							if( wallTouches[i] == false )
-								continue;
-							else
-							{
-								noTouchy = true;
-								break;
-							}
+							Debug.Log("clock");
+							Vector3 dir = swipeDetector.up;                                      //dir * force * slamAOE Diameter
+							connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
+							startDragPos = Vector2.zero;
 						}
-						if( noTouchy == false )
+						else if( detect_anticlockwise.OverlapPoint( mPos ) == true )
 						{
-							//Debug.Log("Has not touched wall!");
-
-							if( swipeDetector.GetComponentInChildren<CircleCollider2D>().OverlapPoint( mPos ) )
-							{
-								if( smoothedVel.magnitude > 5.0f )
-								{
-									StartCoroutine( Slam() );
-									return;
-								}
-							}
-							
-							/*if( deltaAng > slamSensitivity )
-							{
-								StartCoroutine( Slam() );
-								return;
-							} */
+							Debug.Log("anticlock");
+							Vector3 dir = -swipeDetector.up;
+							connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
+							startDragPos = Vector2.zero;
+						}
+						else if( detect_slam.OverlapPoint( mPos ) == true )
+						{
+							StartCoroutine( Slam() );
+							startDragPos = Vector2.zero;
 						}
 
 
-
-
-						//Move our enemy.
-						//Vector3 mousePosV3 = VectorExtras.V3FromV2( mPos, 0f );
-						//TODO add smoothing. TODO store a velocity variable //TODO track touch offset at beginning of touch.
-						//connection.transform.position = VectorExtras.OffsetPosInPointDirection(transform.position, mousePosV3, Vector3.Distance(transform.position, connection.position)); 
-						connection.transform.position = VectorExtras.OffsetPosInPointDirection(transform.position, smoothedDragPos, Vector3.Distance(transform.position, connection.position)); 
-
-
-
+						//OLD way
+						//connection.transform.position = VectorExtras.OffsetPosInPointDirection(transform.position, smoothedDragPos, Vector3.Distance(transform.position, connection.position)); 
 					}
 					else if (Input.GetMouseButtonUp(0)) //Player let go.
 					{
-						path = ArrayTools.PushLast<Vector2>(path, mPos);
-						wallTouches = ArrayTools.PushLast<bool>(wallTouches, GetMouseHitSides(mPos));
-
 						//Apply our swing physics here if we want it.
 
-
-
-						
 						startDragPos = Vector2.zero;
 					}
 				}
@@ -360,14 +290,7 @@ public class SimpleHook : MonoBehaviour
 		head.gameObject.SetActive(false);
 	}
 
-	public bool GetMouseHitSides( Vector2 mousePos )
-	{
-		BoxCollider2D[] walls = swipeDetector.GetComponents<BoxCollider2D>();
-		if( walls[0].OverlapPoint(mousePos) || walls[1].OverlapPoint(mousePos) )
-			return true;
-		else
-			return false;
-	}
+
 
 	////////////////// UTILITY FUNCTIONS /////////////
 

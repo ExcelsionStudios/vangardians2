@@ -13,6 +13,12 @@ namespace Enemies //DON'T extend this class. No need to.
 	{
 		public static Transform container;
 
+		void OnDrawGizmos() //Quick and dirty distance debugging.
+		{
+			Gizmos.color = Color.yellow;
+			Gizmos.DrawWireSphere( transform.position, 1.3f );
+		}
+
 		[SerializeField] private Situation situation;
 		public Situation Status
 		{
@@ -25,18 +31,24 @@ namespace Enemies //DON'T extend this class. No need to.
 				case Situation.InControl:
 					this.gameObject.layer = LayerMask.NameToLayer("Enemy");
 					rb2D.isKinematic = false;
+					distJoint.enabled = false;
 					break;
 				case Situation.BeingPushedByHook:
 					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
 					rb2D.isKinematic = true;
+					distJoint.enabled = false;
 					break;
 				case Situation.Hooked:
-					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
-					rb2D.isKinematic = true;
+					this.gameObject.layer = LayerMask.NameToLayer("Enemy");
+					rb2D.isKinematic = false;
+					distJoint.enabled = true;
+					distJoint.connectedAnchor = VectorExtras.V2FromV3( Vector2.zero );
+					distJoint.distance = Vector2.Distance( Vector2.zero, VectorExtras.V2FromV3(transform.position) );
 					break;
 				case Situation.BeingSlammed:
 					this.gameObject.layer = LayerMask.NameToLayer("IgnorePhysics");
 					rb2D.isKinematic = true;
+					distJoint.enabled = false;
 					break;
 				}
 
@@ -46,15 +58,6 @@ namespace Enemies //DON'T extend this class. No need to.
 			}
 		}
 		#region Situational Values
-		/*
-		[SerializeField] private bool fallen; //TODO make modular
-		public bool hasFallen { 
-			get { return fallen; }
-			internal set {
-				//Disable all the things...
-				fallen = value;
-			}
-		} */
 
 		[SerializeField] private bool immobile;
 		public bool isImmobile {
@@ -107,6 +110,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		public HookBehaviour  HookComponent   { get; internal set; }
 		public SlamBehaviour  SlamComponent   { get; internal set; }
 		public MoveBehaviour  MoveComponent   { get; internal set; }
+		private DistanceJoint2D distJoint;
 		void Awake()
 		{
 			if( container == null )
@@ -115,6 +119,8 @@ namespace Enemies //DON'T extend this class. No need to.
 				container.position = Vector3.zero;
 			}
 			this.transform.parent = container;
+
+			distJoint = GetComponent<DistanceJoint2D>();
 			situation = Situation.InControl;
 			Health = my_maxHp;
 			#region INITALIZE COMPONENTS
@@ -180,8 +186,14 @@ namespace Enemies //DON'T extend this class. No need to.
 			StartCoroutine( "RestoreTimer" );
 		}
 
-
-
+		public float rangeLoss;
+		void FixedUpdate()
+		{
+			if( Status == Situation.Hooked )
+			{
+				distJoint.distance = Mathf.Max(1.0f, distJoint.distance - GetComponent<Rigidbody2D>().velocity.magnitude * rangeLoss );
+			}
+		}
 
 
 		void Update()
