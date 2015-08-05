@@ -19,6 +19,7 @@ namespace Enemies //DON'T extend this class. No need to.
 			Gizmos.DrawWireSphere( transform.position, 1.3f );
 		}
 
+		[Tooltip("This enemy's current situation.")]
 		[SerializeField] private Situation situation;
 		public Situation Status
 		{
@@ -58,7 +59,7 @@ namespace Enemies //DON'T extend this class. No need to.
 			}
 		}
 		#region Situational Values
-
+		[Tooltip("If true, all movement modules will not execute.")]
 		[SerializeField] private bool immobile;
 		public bool isImmobile {
 			get { return immobile; }
@@ -71,6 +72,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		#endregion Situational Values
 
 		#region Health Stuffs
+		[Tooltip("How much hp this enemy starts with and is allowed to have at any time.")]
 		[SerializeField] private int my_maxHp = 10;
 		public int MaxHealth{
 			get{ return my_maxHp; }
@@ -79,6 +81,7 @@ namespace Enemies //DON'T extend this class. No need to.
 				my_maxHp = Mathf.Max( 1, value );
 			}
 		}
+		[Tooltip("The current health value of this enemy.")]
 		[SerializeField] private int my_hp;
 		public int Health { 
 			get{ return my_hp; }
@@ -104,6 +107,7 @@ namespace Enemies //DON'T extend this class. No need to.
 
 
 		//Enemy Component variables
+		[Tooltip("Array of modules this enemy is using. This is set up automatically.")]
 		public ModuleBase[]   modules; //This is needed for custom update(s)
 		public EnemyGrounded  GroundComponent { get; internal set; }
 		public DeathBehaviour DeathComponent  { get; internal set; }
@@ -193,7 +197,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		{
 			StartCoroutine( "RestoreTimer" );
 		}
-
+		[Tooltip("While hooked and moving, this is the rate at which we get closer to the player.")]
 		public float rangeLoss;
 		void FixedUpdate()
 		{
@@ -217,6 +221,7 @@ namespace Enemies //DON'T extend this class. No need to.
 
 		internal bool shouldNotMove //Are we in a situation where our movement isnt allowed? Use isImmobile, not this.
 		{ get { return Status == Situation.BeingPushedByHook || Status == Situation.Hooked || Status == Situation.BeingSlammed; } }
+		[Tooltip("If greater than zero, this enemy is not allowed to move.")]
 		public float stunTimer = 0f;
 		private IEnumerator RestoreTimer() //TODO stop this timer if shouldNotMove changes to true ever.
 		{

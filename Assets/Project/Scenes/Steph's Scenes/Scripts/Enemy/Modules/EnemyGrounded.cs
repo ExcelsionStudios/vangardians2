@@ -11,6 +11,7 @@ namespace Enemies.Modules
 {
 	public class EnemyGrounded : ModuleBase
 	{
+		[Tooltip("This prefab should look identical to this enemy. It should also have 3D rigidbody and collider(s) attached. (so it falls off of our cliff)")]
 		public GameObject corpse;
 
 		internal override void AlwaysUpdate()
