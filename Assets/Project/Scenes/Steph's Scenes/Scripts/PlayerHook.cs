@@ -11,7 +11,9 @@ using Enemies.Modules;
 
 public class PlayerHook : MonoBehaviour 
 {
+	[Tooltip("Seperate hookhead script. This script works closely with it.")]
 	public PlayerHookHead head;
+	[Tooltip("We draw to our connection using this.")]
 	public LineRenderer chain; 		//This is also what we draw our chain from.
 	private Transform c; //Storage for the below accessor. (only use the below and ignore this)
 	public Transform connection { //This is what we draw our chain to.
@@ -22,24 +24,37 @@ public class PlayerHook : MonoBehaviour
 			c = value;
 		}
 	}
+	[Tooltip("Our cannon head. We rotate this.")]
 	public Transform cannon; 		//Our cannon head. We rotate this.
+	[Tooltip("A visual to help the player know where the hook will travel.")]
 	public Transform trajectoryVisual; 
+	[Tooltip("A set of 2D colliders used to help detect mouse position relative to enemy and then react accordingly.")]
 	public Transform swipeDetector; //Helps detect swipes.
 	private CircleCollider2D detect_slam;
 	private BoxCollider2D detect_clockwise;
 	private BoxCollider2D detect_anticlockwise;
 
+	[Tooltip("Overall speed our hook will fire or reel back in at.")]
 	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
+	[Tooltip("The hook will never go further from the player than this distance.")]
 	public float maxHookDistance = 4f;  //Max distance our hook will travel.
+	[Tooltip("Force multiplier for when we swing an enemy. Higher values mean faster travel.")]
 	public float swingForce = 10.0f;    //How powerful each swing is.
-	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
 
+	[Tooltip("How long it takes for the animation for slamming an enemy takes. (This isn't in seconds, rather a value that is added over time)")]
+	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
+	[Tooltip("The enemy transform is scaled over time as they are tossed through the air.")]
 	public AnimationCurve enemyScaling; //Scale multiplier of enemy as they are tossed.
 
+	[Tooltip("Touch detection range around the player for starting to aim the hook.")]
 	public float startHookAimTouchDistance = 1.25f; // Radius around the player in which a touch will start to aim a hook shot.
-	public float hookedEnemyTouchDistance = 3.0f; //Radius around a hooked enemy in which a touch will trigger (And then we can swing or slam the enemy depending on where the touch moves)
+	[Tooltip("Touch detection range around the enemy for swinging or slamming it.")]
+	public float hookedEnemyTouchDistance = 3.0f;   // Radius around a hooked enemy in which a touch will trigger (And then we can swing or slam the enemy depending on where the touch moves)
+	[Tooltip("This swipe velocity must be exceeded in order to trigger a swing or a slam. (If not fast enough, nothing happens.)")]
+	public float minSwipeVelocity = 0.025f; //Any swipe below this speed will not be detected.
 
 	private Vector2 startDragPos = Vector2.zero;
+	[Tooltip("Leave this value blank!")]
 	public Enemies.Enemy hookedEnemy;
 
 	void Start () 
@@ -55,7 +70,7 @@ public class PlayerHook : MonoBehaviour
 	}
 
 	private Vector2 _lastMousePos = Vector2.zero;
-	public float mouseSpeed;
+	private float mouseSpeed;
 
 	void Update() 
 	{
@@ -164,24 +179,27 @@ public class PlayerHook : MonoBehaviour
 					Vector2 mPos = VectorExtras.GetMouseWorldPos();
 					if( Input.GetMouseButton(0) ) //Player is holding..
 					{
-						if( detect_clockwise.OverlapPoint( mPos ) == true )
+						if( mouseSpeed > minSwipeVelocity )
 						{
-							Debug.Log("clock");
-							Vector3 dir = swipeDetector.up;                                      //dir * force * slamAOE Diameter
-							connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
-							startDragPos = Vector2.zero;
-						}
-						else if( detect_anticlockwise.OverlapPoint( mPos ) == true )
-						{
-							Debug.Log("anticlock");
-							Vector3 dir = -swipeDetector.up;
-							connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
-							startDragPos = Vector2.zero;
-						}
-						else if( detect_slam.OverlapPoint( mPos ) == true )
-						{
-							StartCoroutine( Slam() );
-							startDragPos = Vector2.zero;
+							if( detect_clockwise.OverlapPoint( mPos ) == true )
+							{
+								Vector3 dir = swipeDetector.up;                                      
+								hookedEnemy.SwingComponent.NotifySwing( true, dir );				 //dir * force * slamAOE Diameter
+								connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
+								startDragPos = Vector2.zero;
+							}
+							else if( detect_anticlockwise.OverlapPoint( mPos ) == true )
+							{
+								Vector3 dir = -swipeDetector.up;
+								hookedEnemy.SwingComponent.NotifySwing( false, dir );
+								connection.GetComponent<Rigidbody2D>().AddForce( new Vector2(dir.x, dir.y) * swingForce * (1.3f * 2.0f), ForceMode2D.Force );
+								startDragPos = Vector2.zero;
+							}
+							else if( detect_slam.OverlapPoint( mPos ) == true )
+							{
+								StartCoroutine( Slam() );
+								startDragPos = Vector2.zero;
+							}
 						}
 
 

@@ -110,6 +110,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		public HookBehaviour  HookComponent   { get; internal set; }
 		public SlamBehaviour  SlamComponent   { get; internal set; }
 		public MoveBehaviour  MoveComponent   { get; internal set; }
+		public SwingBehaviour SwingComponent  { get; internal set; }
 		private DistanceJoint2D distJoint;
 		void Awake()
 		{
@@ -176,6 +177,13 @@ namespace Enemies //DON'T extend this class. No need to.
 			if( module != null )
 			{
 				MoveComponent = module as MoveBehaviour;
+				modules = ArrayTools.Push<ModuleBase>(modules, module);
+			}
+			//Swing
+			module = GetComponent<SwingBehaviour>();
+			if( module != null )
+			{
+				SwingComponent = module as SwingBehaviour;
 				modules = ArrayTools.Push<ModuleBase>(modules, module);
 			}
 			#endregion

@@ -10,15 +10,20 @@ using Enemies;
 [RequireComponent(typeof(CircleCollider2D))]
 public class PlayerHookHead : MonoBehaviour 
 {
+	[Tooltip("This script works closely with PlayerHook.")]
 	public PlayerHook owner;
 	//public AnimationCurve 
-	public float maxDistance;
-	public float speed;
-	public Vector3 direction;
-	public Transform hit;
+	private float maxDistance;
+	private float speed;
+	private Vector3 direction;
+	private Transform hit;
+	[Tooltip("Speed multiplier as the hook is extending. (Overall speed is 'hookSpeed' in PlayerHook.cs)")]
 	public AnimationCurve extendingMultiplier;
-	public float extendingScale = 1.6f;
+	[Tooltip("Don't mess with this. (Default is 0.5, if you really must.)")]
+	public float extendingScale = 0.5f;
+	[Tooltip("Speed multiplier PATTERN as the hook is retracting. (Overall speed is 'hookSpeed' in PlayerHook.cs)")]
 	public AnimationCurve retractingPattern;
+	[Tooltip("How often to repeat the above pattern as we retract.")]
 	public float patternScale = 1.6f;
 	
 	private Vector3 extent = Vector3.zero;
