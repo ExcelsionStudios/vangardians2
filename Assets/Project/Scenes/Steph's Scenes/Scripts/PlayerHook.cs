@@ -33,9 +33,11 @@ public class PlayerHook : MonoBehaviour
 	public float maxHookDistance = 4f;  //Max distance our hook will travel.
 	public float swingForce = 10.0f;    //How powerful each swing is.
 	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
-	public float slamSensitivity = 90.0f; //If our delta angle is larger than this while dragging, it triggers a slam.
 
 	public AnimationCurve enemyScaling; //Scale multiplier of enemy as they are tossed.
+
+	public float startHookAimTouchDistance = 1.25f; // Radius around the player in which a touch will start to aim a hook shot.
+	public float hookedEnemyTouchDistance = 3.0f; //Radius around a hooked enemy in which a touch will trigger (And then we can swing or slam the enemy depending on where the touch moves)
 
 	private Vector2 startDragPos = Vector2.zero;
 	public Enemies.Enemy hookedEnemy;
@@ -52,29 +54,11 @@ public class PlayerHook : MonoBehaviour
 		detect_slam = swipeDetector.FindChild("Swipe_Slam").GetComponent<CircleCollider2D>();
 	}
 
-	public float dragSmoothing;
-	private Vector3 smoothedDragPos = Vector3.zero;
-	private Vector3 smoothedVel;
-
-	void OnDrawGizmosSelected()
-	{
-		if( !Application.isEditor || !Application.isPlaying )
-			return; //Code throws array index errors because it tries to run when the game isnt.
-
-		Gizmos.color = Color.cyan;
-		Gizmos.DrawSphere( smoothedDragPos, 0.15f );
-	}
+	private Vector2 _lastMousePos = Vector2.zero;
+	public float mouseSpeed;
 
 	void Update() 
 	{
-		/*
-		smoothedDragPos = Vector3.SmoothDamp(smoothedDragPos, VectorExtras.V3FromV2(VectorExtras.GetMouseWorldPos(),0f), ref smoothedVel, dragSmoothing, 9999f);
-		if( startDragPos != Vector2.zero )
-		{
-			Vector2 direction = VectorExtras.Direction( VectorExtras.V2FromV3(transform.position), VectorExtras.V2FromV3(smoothedDragPos) );
-			TransformExtensions.SetRotation2D( swipeDetector, VectorExtras.VectorToDegrees(direction) );
-			//Debug.Log( smoothedVel.magnitude );
-		} */
 
 		if( inSlam == false )
 			ReadInput();
@@ -92,11 +76,14 @@ public class PlayerHook : MonoBehaviour
 			chain.SetPosition(0, Vector3.zero);
 			//Setting the texture scale doesn't matter here.
 		}
+
 	}
 
 
 	void ReadInput()
 	{
+		mouseSpeed = Vector2.Distance( _lastMousePos, VectorExtras.GetMouseWorldPos() ) * Time.deltaTime;
+
 		if (connection == null) // Our head is not present and there is no enemy attached. (Do code for a new head)
 		{
 			if (startDragPos == Vector2.zero)
@@ -104,7 +91,7 @@ public class PlayerHook : MonoBehaviour
 				if (Input.GetMouseButtonDown(0))
 				{
 					Vector2 mPos = VectorExtras.GetMouseWorldPos();
-					if (mPos.magnitude < 1.25f)
+					if (mPos.magnitude < startHookAimTouchDistance)
 					{
 						startDragPos = mPos;
 					}
@@ -161,7 +148,7 @@ public class PlayerHook : MonoBehaviour
 					if (Input.GetMouseButtonDown(0))
 					{
 						Vector2 mPos = VectorExtras.GetMouseWorldPos();
-						if (Vector2.Distance(mPos, VectorExtras.V2FromV3(connection.position)) < 3.0f) //Make sure we're starting the click somewhat close to our hooked enemy. TODO make public var
+						if (Vector2.Distance(mPos, VectorExtras.V2FromV3(connection.position)) < hookedEnemyTouchDistance) //Make sure we're starting the click somewhat close to our hooked enemy. TODO make public var
 						{
 							startDragPos = mPos;
 
@@ -210,6 +197,8 @@ public class PlayerHook : MonoBehaviour
 				}
 			}
 		}
+
+		_lastMousePos = VectorExtras.GetMouseWorldPos();
 	}
 
 	private bool inSlam = false; //DONT use enum for this. We use this for this script, not our enemy.
