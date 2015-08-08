@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Enemies;
+using Utils.Audio;
 
 //Stephan Ennen 7/24/15
 
@@ -13,6 +14,8 @@ namespace Enemies.Modules
 	{
 		[Tooltip("This prefab should look identical to this enemy. It should also have 3D rigidbody and collider(s) attached. (so it falls off of our cliff)")]
 		public GameObject corpse;
+
+		public AudioClip[] fallSounds;		// Set in Editor for now.
 
 		internal override void AlwaysUpdate()
 		{
@@ -27,7 +30,7 @@ namespace Enemies.Modules
 
 		void Fall()
 		{
-			if( owner.Status == Situation.Hooked ) //Tell our hook to retract.
+			if( owner.Status == Situation.Hooked ) // Tell our hook to retract.
 			{
 				GameObject obj = GameObject.Find("Player") as GameObject; //TODO Find methods are VERY slow. Use an alternate route.
 				PlayerHook hook = obj.GetComponent<PlayerHook>();
@@ -41,8 +44,11 @@ namespace Enemies.Modules
 			body.GetComponent<Rigidbody>().velocity = new Vector3( velocity.x, velocity.y, 0.0f ); //Maintain velocity for seamless transition.
 			//body.GetComponent<Rigidbody>().angularVelocity TODO apply ang velocity.
 
+			// Play the only Slam Sound there is for now. TODO: Pick randomly from sound array, or base the sound used on the impact force / object collided with.
+			if (fallSounds != null && fallSounds.Length > 0)
+				AudioHelper.PlayClipAtPoint(fallSounds[Random.Range(0, fallSounds.Length)], transform.position);
 
-			GameObject.Destroy( this.gameObject ); //Dont use kill here - we dont want other modules making blood or anything else, it doesnt makesense when falling.
+			GameObject.Destroy( this.gameObject ); //Dont use kill here - we dont want other modules making blood or anything else, it doesnt make sense when falling.
 		}
 	}
 }

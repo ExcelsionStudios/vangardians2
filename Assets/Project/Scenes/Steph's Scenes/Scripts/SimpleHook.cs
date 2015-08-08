@@ -12,9 +12,9 @@ using Enemies.Modules;
 public class SimpleHook : MonoBehaviour 
 {
 	public SimpleHookHead head;
-	public LineRenderer chain; 		//This is also what we draw our chain from.
-	private Transform c; //Storage for the below accessor. (only use the below and ignore this)
-	public Transform connection { //This is what we draw our chain to.
+	public LineRenderer chain;		//This is also what we draw our chain from.
+	private Transform c; 			//Storage for the below accessor. (only use the below and ignore this)
+	public Transform connection { 	//This is what we draw our chain to.
 		get{ return c; }
 		set{
 			if( hookedEnemy != null )
@@ -22,17 +22,17 @@ public class SimpleHook : MonoBehaviour
 			c = value;
 		}
 	}
-	public Transform cannon; 		//Our cannon head. We rotate this.
+	public Transform cannon; 				//Our cannon head. We rotate this.
 	public Transform trajectoryVisual; 
-	public Transform swipeDetector; //Helps detect swipes.
-	public Transform swingDetector; //Helps detect if we're swinging or slamming.
+	public Transform swipeDetector; 		//Helps detect swipes.
+	public Transform swingDetector; 		//Helps detect if we're swinging or slamming.
 
-	public float hookSpeed; 			  //speed our hook shoots out, or reels back in.
-	public float maxHookDistance = 4f;  //Max distance our hook will travel.
-	public float slamVelocity = 10.0f;    //Essentially the animation Speed when slamming an enemy.
-	public float slamSensitivity = 90.0f; //If our delta angle is larger than this while dragging, it triggers a slam.
+	public float hookSpeed; 				//speed our hook shoots out, or reels back in.
+	public float maxHookDistance = 4f;  	//Max distance our hook will travel.
+	public float slamVelocity = 10.0f;    	//Essentially the animation Speed when slamming an enemy.
+	public float slamSensitivity = 90.0f; 	//If our delta angle is larger than this while dragging, it triggers a slam.
 
-	public AnimationCurve enemyScaling; //Scale multiplier of enemy as they are tossed.
+	public AnimationCurve enemyScaling; 	//Scale multiplier of enemy as they are tossed.
 
 	private Vector2 startDragPos = Vector2.zero;
 	public Vector2[] path = new Vector2[0]; 

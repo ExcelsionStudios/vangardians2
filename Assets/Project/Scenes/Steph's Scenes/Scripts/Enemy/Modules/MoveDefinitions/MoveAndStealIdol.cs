@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Enemies;
+using Utils.Audio;
 
 //Stephan Ennen 7/27/15
 
 //Tries to move to the idol, then tries to run away with it.
+
 namespace Enemies.Modules
 {
 	//[RequireComponent(typeof(Rigidbody2D))]
@@ -17,6 +19,8 @@ namespace Enemies.Modules
 		public bool HasIdol{
 			get{ return holdingPosition.childCount > 0; }
 		}
+
+		public AudioClip[] idolGrabbedSounds;	// Set in Editor for now.
 
 		void Start()
 		{
@@ -58,6 +62,8 @@ namespace Enemies.Modules
 					Idol.Get().Pickup( this.owner );
 					idol.position = holdingPosition.position;
 					idol.parent = holdingPosition;
+					if (idolGrabbedSounds != null && idolGrabbedSounds.Length > 0)
+						AudioHelper.PlayClipAtPoint(idolGrabbedSounds[Random.Range(0, idolGrabbedSounds.Length)], transform.position);
 				}
 			}
 		}

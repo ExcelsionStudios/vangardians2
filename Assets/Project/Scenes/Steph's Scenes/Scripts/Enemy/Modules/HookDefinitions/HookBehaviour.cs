@@ -9,44 +9,46 @@ namespace Enemies.Modules
 {
 	public class HookBehaviour : ModuleBase
 	{
-		
-		//When the hook head first makes contact with us.
-		internal virtual void OnHookPushStart()
+		// When the hook head first makes contact with us.
+		public virtual void OnHookPushStart()
 		{
 			Debug.Log("Hook first contact!");
 		}
 		
-		//Every frame that the inital hook fire pushes us, this is called.
-		internal virtual void OnHookPushing()
+		// Every frame that the inital hook fire pushes us, this is called.
+		public virtual void OnHookPushing()
 		{
 			return;
 		}
-		//When the hookhead passes control over to the regular hooked-enemy logic, this is called.
-		internal virtual void OnHookPushEnd()
+
+		// When the hookhead passes control over to the regular hooked-enemy logic, this is called.
+		public virtual void OnHookPushEnd()
 		{
 			Debug.Log("Hook finished making contact! OnHookStart will be called next.");
 		}
 
-
-		//The hook just attached to us.
-		internal virtual void OnHookStart()
+		// The hook just attached to us.
+		public virtual void OnHookStart()
 		{
 			Debug.Log("Hook Attached!");
 		}
-		//Called every update while we're attached to the hook.
-		internal virtual void OnHookUpdate()
+
+		// Called every update while we're attached to the hook.
+		public virtual void OnHookUpdate()
 		{
 			return;
 		}
-		//The hook just detatched from us.
-		internal virtual void OnHookEnd()
+
+		// The hook just detatched from us.
+		public virtual void OnHookEnd()
 		{
 			Debug.Log("Hook Dettached!");
 		}
 
 
 		private Situation lastStatus;
-		//Called from the player's hook script. DONT override. Also note that this isnt called every frame.
+
+		// Called from the player's hook script. DONT override. Also note that this isnt called every frame.
 		public void NotifyStatus( Situation status ) //TODO make this include the inital hook contact state.
 		{
 			if( lastStatus != status )
@@ -63,8 +65,7 @@ namespace Enemies.Modules
 			}
 			lastStatus = status;
 		}
-
-
+		
 		protected override void Update()
 		{
 			if( owner.Status == Situation.Hooked )
@@ -72,9 +73,5 @@ namespace Enemies.Modules
 			else if( owner.Status == Situation.BeingPushedByHook )
 				OnHookPushing();
 		}
-
-
-
-
 	}
 }

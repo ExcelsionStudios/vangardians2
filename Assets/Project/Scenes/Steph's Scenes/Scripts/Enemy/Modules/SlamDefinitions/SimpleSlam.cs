@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Enemies;
+using Utils.Audio;
 
 //Stephan Ennen 6/24/15
  
@@ -11,8 +12,9 @@ namespace Enemies.Modules
 	{
 		public float radius = 1f;
 		public float speed = 10f;
+		public AudioClip[] slamSounds;		// Set in Editor for now.
 
-		//Called as soon as the input identifies a slam. Maybe play sounds or a particle effect?
+		// Called as soon as the input identifies a slam. Maybe play sounds or a particle effect?
 		public override void OnSlamStart()
 		{
 			base.OnSlamStart();
@@ -22,12 +24,16 @@ namespace Enemies.Modules
 		{
 			base.OnSlamUpdate( progress );
 		}
-		//Called at the very end of a slam. Do things like apply damage in an AOE or create particle effects, exc. (This is the primary use)
+		// Called at the very end of a slam. Do things like apply damage in an AOE or create particle effects, exc. (This is the primary use)
 		public override void OnSlamEnd()
 		{
 			base.OnSlamEnd();
 			Vector2 center = VectorExtras.V2FromV3(transform.position);
-			Debug.Log("Slamming effect "+ center, this);
+			Debug.Log("Slamming effect " + center, this);
+
+			// Play the only Slam Sound there is for now. TODO: Pick randomly from sound array, or base the sound used on the impact force / object collided with.
+			if (slamSounds != null && slamSounds.Length > 0)
+				AudioHelper.PlayClipAtPoint(slamSounds[Random.Range(0, slamSounds.Length)], transform.position);
 
 			//Collider2D[] targets = Physics2D.OverlapCircleAll( center, radius, LayerMask.NameToLayer("Enemy") );
 			Collider2D[] targets = Physics2D.OverlapCircleAll( center, radius, Physics2D.AllLayers );
@@ -50,7 +56,7 @@ namespace Enemies.Modules
 
 				body.AddForceAtPosition( direction * speed, center, ForceMode2D.Impulse );
 
-				//1 damage to surrounding enemies.
+				// 1 damage to surrounding enemies.
 				Enemy e = targets[i].transform.GetComponent<Enemy>();
 				if( e != null )
 				{
@@ -58,9 +64,9 @@ namespace Enemies.Modules
 					e.stunTimer += 0.5f; //Stun the enemy for half a second.
 				}
 			}
-			//3 damage to the enemy that was slammed. (We do this last otherwise this script might be deleted due to death.)
+			// 3 damage to the enemy that was slammed. (We do this last otherwise this script might be deleted due to death.)
 			owner.Health -= 3;
-			owner.stunTimer += 0.5f; //Stun the enemy.
+			owner.stunTimer += 0.5f;	// Stun the enemy.
 		}
 	}
 }
