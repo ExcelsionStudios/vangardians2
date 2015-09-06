@@ -308,10 +308,10 @@ Light:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100008}
   m_Enabled: 1
-  serializedVersion: 5
+  serializedVersion: 6
   m_Type: 2
   m_Color: {r: 1, g: .599240601, b: .274059266, a: 1}
-  m_Intensity: 1
+  m_Intensity: 2
   m_Range: 8
   m_SpotAngle: 30
   m_CookieSize: 10
