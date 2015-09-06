@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Enemies;
 
 // Matt McGrath - 5/19/2015
 
