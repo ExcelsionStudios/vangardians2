@@ -116,6 +116,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		public MoveBehaviour  MoveComponent   { get; internal set; }
 		public SwingBehaviour SwingComponent  { get; internal set; }
 		private DistanceJoint2D distJoint;
+
 		void Awake()
 		{
 			if( container == null )
@@ -128,6 +129,7 @@ namespace Enemies //DON'T extend this class. No need to.
 			distJoint = GetComponent<DistanceJoint2D>();
 			situation = Situation.InControl;
 			Health = my_maxHp;
+
 			#region INITALIZE COMPONENTS
 			//TODO - Throw an error and quit if there's a required component missing... Also possibly make a loop so we get all modules
 			modules = new ModuleBase[0];
@@ -197,6 +199,7 @@ namespace Enemies //DON'T extend this class. No need to.
 		{
 			StartCoroutine( "RestoreTimer" );
 		}
+
 		[Tooltip("While hooked and moving, this is the rate at which we get closer to the player.")]
 		public float rangeLoss;
 		void FixedUpdate()
@@ -206,7 +209,6 @@ namespace Enemies //DON'T extend this class. No need to.
 				distJoint.distance = Mathf.Max(1.0f, distJoint.distance - GetComponent<Rigidbody2D>().velocity.magnitude * rangeLoss );
 			}
 		}
-
 
 		void Update()
 		{
@@ -246,13 +248,5 @@ namespace Enemies //DON'T extend this class. No need to.
 			yield return null;
 			StartCoroutine( "RestoreTimer" );
 		}
-
-
-
-
-
-
-
-
 	}
 }
