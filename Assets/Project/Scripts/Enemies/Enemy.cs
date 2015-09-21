@@ -12,6 +12,7 @@ namespace Enemies //DON'T extend this class. No need to.
 	public class Enemy : MonoBehaviour 
 	{
 		public static Transform container;
+		public static int count; //How many enemies there currently are on screen.
 
 		void OnDrawGizmos() //Quick and dirty distance debugging.
 		{
@@ -119,6 +120,7 @@ namespace Enemies //DON'T extend this class. No need to.
 
 		void Awake()
 		{
+			count++;
 			if( container == null )
 			{
 				container = new GameObject("_Container-Enemies").GetComponent<Transform>();
@@ -219,6 +221,11 @@ namespace Enemies //DON'T extend this class. No need to.
 			{
 				module.AlwaysUpdate();
 			}
+		}
+
+		void OnDestroy()
+		{
+			count--; //This SHOULD correctly work even when changing scenes (So that count goes back to zero.)
 		}
 
 		internal bool shouldNotMove //Are we in a situation where our movement isnt allowed? Use isImmobile, not this.
